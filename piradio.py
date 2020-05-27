@@ -20,10 +20,12 @@ import datetime
 import os
 import subprocess
 import threading
+
 # Python2
 import SocketServer
 # Python3
 #import socketserver as SocketServer
+
 import RPi.GPIO as GPIO
 import base64
 import requests
@@ -57,11 +59,11 @@ except:
 #  オーディオドライバ
 radio_audio_driver = 'alsa'
 #  出力デバイス
-#radio_audio_device = 'plughw:CARD=Device,DEV=0'
-radio_audio_device = 'plughw:CARD=ALSA,DEV=0'
+radio_audio_device = 'plughw:CARD=Device,DEV=0'
+#radio_audio_device = 'plughw:CARD=ALSA,DEV=0'
 # 音量調整デバイス(amixerの引数: -c0 -c1など)
-#radio_volume_device = '-c1'
-radio_volume_device = '-c0'
+radio_volume_device = '-c1'
+#radio_volume_device = '-c0'
 # APIのポート(APIを使用しない場合はコメントアウト)
 piradio_api_port = 8899
 
@@ -130,6 +132,8 @@ p_nexec_count = 0
 # 実行しないで放置と判断するまでのタイムアウト
 p_nexec_timeout = 10
 
+# GPIOの問題避け
+prev_pushed_time = 0
 
 # 局名リスト読み込み処理
 station_lists = []
@@ -213,9 +217,12 @@ class APIHandler(SocketServer.BaseRequestHandler):
 
         self.data = self.request.recv(256).strip()
 
-        cmd = self.data.split(':',2)[0]
-        target = self.data.split(':',2)[1]
-        #print(cmd)
+        cmd = self.data.split(b':',2)[0]
+        cmd = cmd.decode('utf-8')
+        target = self.data.split(b':',2)[1]
+        target = target.decode('utf-8')
+        print(cmd)
+        print(target)
 
         if cmd == 'START':
             #print('START commdan for %s' % target)
@@ -225,19 +232,19 @@ class APIHandler(SocketServer.BaseRequestHandler):
                 (id, name, aname, logo, method) = station_lists[tmp_pos]
                 if id == target:
                     #print(station_lists[tmp_pos])
-                    self.request.sendall("OK\n")
+                    self.request.sendall("OK\n".encode('utf-8'))
                     p_selected = tmp_pos
                     api_p_start()
                     return(True)
-            self.request.sendall("NOMATCH\n")
+            self.request.sendall("NOMATCH\n".encode('utf-8'))
             return(False)
         if cmd == 'STOP':
             #print('STOP')
             api_p_stop()
-            self.request.sendall("OK\n")
+            self.request.sendall("OK\n".encode('utf-8'))
             return(True)
 
-        self.request.sendall("ERR\n")
+        self.request.sendall("ERR\n".encode('utf-8'))
         return(False)
 
 # API用スレッド
@@ -312,6 +319,17 @@ def p_startstop(pinnum):
     global p_nexec_count
     global p_nexec_timeout
 
+    # GPIO割込みが2重検出される問題避け
+    # 他のスイッチではあまり問題ではないがSTART/STOPだけは大問題なのでworkaround
+    global prev_pushed_time
+    # ガードタイムはこの処理(0.5+3) +0.5で設定
+    guard_time = 4
+
+    # GPIO割込みの2重検出避け
+    pushed_time = time.time()
+    if (pushed_time - prev_pushed_time) < guard_time:
+        return()
+    prev_pushed_time = time.time()
 
     try:
         res = subprocess.check_output(["pgrep","ffplay"])
@@ -509,7 +527,7 @@ def main():
     try:
         CTRL_SW.STARTSTOP
         GPIO.setup(CTRL_SW.STARTSTOP,GPIO.IN,pull_up_down=GPIO.PUD_UP)
-        GPIO.add_event_detect(CTRL_SW.STARTSTOP, GPIO.FALLING, callback=p_startstop, bouncetime=600)
+        GPIO.add_event_detect(CTRL_SW.STARTSTOP, GPIO.FALLING, callback=p_startstop, bouncetime=300)
     except:
         pass
     try:
