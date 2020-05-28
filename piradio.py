@@ -59,11 +59,11 @@ except:
 #  オーディオドライバ
 radio_audio_driver = 'alsa'
 #  出力デバイス
-radio_audio_device = 'plughw:CARD=Device,DEV=0'
-#radio_audio_device = 'plughw:CARD=ALSA,DEV=0'
+#radio_audio_device = 'plughw:CARD=Device,DEV=0'
+radio_audio_device = 'plughw:CARD=ALSA,DEV=0'
 # 音量調整デバイス(amixerの引数: -c0 -c1など)
-radio_volume_device = '-c1'
-#radio_volume_device = '-c0'
+#radio_volume_device = '-c1'
+radio_volume_device = '-c0'
 # APIのポート(APIを使用しない場合はコメントアウト)
 piradio_api_port = 8899
 
