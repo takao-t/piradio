@@ -1,0 +1,77 @@
+Pirate Audio対応
+
+piradio_pirate.py がPirate Audio対応用です。フレームバッファ版と比較して以下が異なります。
+
+・4ボタン制御です
+　Pirate Audio上のボタンだけで制御します
+　選局はUPしかありません。DOWN側がないので局リストを長くしすぎると面倒になります
+  ただし、コードとしては存在しているのでGPIOからスイッチを引き出せば5ボタン制御
+　にも改造できます。
+　この際、使用するGPIOについて注意してください。Pirate Audio上のスイッチが5,6,16と
+  20または24を、DACが25を、液晶が9と13を使用しています。
+
+・下に表示する音量と時計はありません
+　小さすぎて見えないので実装していません
+
+・ボリュームはポップアップ表示です
+
+〇セットアップ
+
+このプログラム自体はPythonなので特に問題はないのですが、Pirate AudioのSPI DACが
+音量調整を持たないので1工夫が必要です。
+
+mopidyをインストールする必要はないので、入れなくてかまいません。というかmopidy
+入れてプレイヤーにしてしまうとラジオにならないです。
+
+SPI DACを使用するため /boot/config.txtに以下を追加します。
+
+dtoverlay=hifiberry-dac
+gpio=25=op,dh
+
+DACの音量制御がない(わからない)ので、ALSAのSoftVolumeを使います。
+/etc/asound.confに以下の内容を書きます。
+
+pcm.softvol {
+    type            softvol
+    slave {
+        pcm         "plughw:0"
+    }
+    control {
+        name        "SoftMaster"
+        card        0
+    }
+}
+
+pcm.!default {
+    type             plug
+    slave.pcm       "softvol";
+}
+
+ここで注意ですが、pcm "plughw:0"のところがSPI DACを指すようにしてください。
+オンボードサウンド、HDMI等がある場合には "plughw:1" がSPI DACになる場合が
+ありますので、正しくSPI DACを指すようにします。
+aplay -L で以下のようなエントリがSPI DACです。
+
+plughw:CARD=sndrpihifiberry,DEV=0
+    snd_rpi_hifiberry_dac, HifiBerry DAC HiFi pcm5102a-hifi-0
+    Hardware device with all software conversions
+
+上記の設定で、'softvol'->音量調整->'plughw:0' になるのでサウンドデバイス
+として'softvol'を指定すると音量調整の効くSPI-DACとなります。
+これによりpythonプログラム側の設定は以下のようになります。
+
+#
+#  オーディオドライバ
+radio_audio_driver = 'alsa'
+# 出力デバイス
+# Pirate AudioのSPI DACを使用するので注意
+radio_audio_device = 'softvol'
+# 音量調整デバイス(amixerの引数: -c0 -c1など)
+radio_volume_device = '-c0'
+# コントロールデバイス
+radio_volume_ctl = 'SoftMaster'
+
+SPI DACが2番目のデバイスとして認識されている場合にはasound.confでは"plughw:1:を設定し、pythonの-c0を-c1に変更してください。
+
+PythonのモジュールST7789が必要になりますので、pipでインストールしてください。
+PILとかも必要になるのでソースを見て入れてください。
