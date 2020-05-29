@@ -1,7 +1,7 @@
 Raspberry Piをradikoラジオにする(らじるも使える)
 
 ![sample](https://user-images.githubusercontent.com/49352933/82976092-272b5800-a019-11ea-9ec7-32c22b80a651.jpg)
-![IMG_3605](https://user-images.githubusercontent.com/49352933/83227488-4fed5200-a1bf-11ea-88c8-2584adaadd3b.JPG)
+![pirate](https://user-images.githubusercontent.com/49352933/83227689-bf634180-a1bf-11ea-97cb-83e33b1f1227.jpg)
 
 要るもの:
 
