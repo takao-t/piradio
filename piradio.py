@@ -1,7 +1,7 @@
 #-*- coding: utf-8 -*-
 
 # Raspberry Piをradikoラジオにする
-# Python 2.7 対応 (3は対応中なので動かない)
+# Python 2.7 対応 (3は一部書き換えて)
 #
 # 要るもの:
 # Raspberri Pi 3とか4とかZero Wとか
@@ -10,7 +10,8 @@
 # このスクリプトでは320x240を想定
 # 画面にはpygameを使用
 # 要するにpygameで表示できればOK
-# 日本語表示用の適当なTTFフォント
+# 日本語表示用の適当なTTFフォント(フォントがないと止まるので注意)
+# このソース内をfont1で検索して書き換え位置を探して
 # ffmpeg(ffplay)
 
 import sys
@@ -60,10 +61,14 @@ except:
 radio_audio_driver = 'alsa'
 #  出力デバイス
 #radio_audio_device = 'plughw:CARD=Device,DEV=0'
-radio_audio_device = 'plughw:CARD=ALSA,DEV=0'
+#radio_audio_device = 'plughw:CARD=ALSA,DEV=0'
+radio_audio_device = 'plughw:0'
+#radio_audio_device = 'plughw:1'
 # 音量調整デバイス(amixerの引数: -c0 -c1など)
 #radio_volume_device = '-c1'
 radio_volume_device = '-c0'
+# 音量調整コントローラ名
+radio_volume_ctl = 'PCM'
 # APIのポート(APIを使用しない場合はコメントアウト)
 piradio_api_port = 8899
 
@@ -413,7 +418,7 @@ def p_volumectl(pinnum):
             vol_val += 1
             if vol_val >= 100:
                 vol_val = 100
-            vol_cmd = 'amixer %s sset PCM %d%%,%d%% unmute > /dev/null 2>&1' % (radio_volume_device, vol_val, vol_val)
+            vol_cmd = 'amixer %s sset %s %d%%,%d%% unmute > /dev/null 2>&1' % (radio_volume_device, radio_volume_ctl, vol_val, vol_val)
             os.system(vol_cmd)
     except:
         pass
@@ -423,7 +428,7 @@ def p_volumectl(pinnum):
             vol_val -= 1
             if vol_val <= 0:
                 vol_val = 0
-            vol_cmd = 'amixer %s sset PCM %d%%,%d%% unmute > /dev/null 2>&1' % (radio_volume_device, vol_val, vol_val)
+            vol_cmd = 'amixer %s sset %s %d%%,%d%% unmute > /dev/null 2>&1' % (radio_volume_device, radio_volume_ctl, vol_val, vol_val)
             os.system(vol_cmd)
     except:
         pass
