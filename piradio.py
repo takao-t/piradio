@@ -57,6 +57,7 @@ except:
 
 # システム設定
 # 
+# オーディオ関連の設定は alsa_README.txt も参照のこと
 #  オーディオドライバ
 radio_audio_driver = 'alsa'
 #  出力デバイス
@@ -68,7 +69,8 @@ radio_audio_device = 'plughw:0'
 #radio_volume_device = '-c1'
 radio_volume_device = '-c0'
 # 音量調整コントローラ名
-radio_volume_ctl = 'PCM'
+#radio_volume_ctl = 'PCM'
+radio_volume_ctl = 'Headphone'
 # APIのポート(APIを使用しない場合はコメントアウト)
 piradio_api_port = 8899
 
