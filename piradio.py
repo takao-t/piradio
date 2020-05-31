@@ -495,15 +495,20 @@ def disp_datetime():
     try:
         use_gui
         # 背景をfillしなおさないので表示位置だけ消去するためrectを書く
-        pygame.draw.rect(screen, sc_bg_color, (160,226,319,240) )
-
+        pygame.draw.rect(screen, sc_bg_color, (110,226,319,240) )
         now_dt = datetime.datetime.now()
         now_str = now_dt.strftime('%Y/%m/%d %a  %H:%M')
+        with open('/sys/class/thermal/thermal_zone0/temp', 'r') as f:
+            cpu_t = f.read()
+        cpu_t = round(float(cpu_t) / 1000.0) 
+        ctt = "%d'C" % cpu_t
+        now_str = ctt + '    ' + now_str
         now_text = font4.render(str(now_str), True, bt_text_color)
-        screen.blit(now_text, (160,226))
+        screen.blit(now_text, (110,226))
         pygame.display.update()
     except:
         pass
+
 
 # 画面上ポップアップテキスト
 def popup_text(text,color):
