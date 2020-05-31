@@ -15,8 +15,16 @@ Raspberry Piをradikoラジオにする(らじるも使える)
 4. 日本語表示用の適当なTTFフォント
 5. ffmpegを別途インストールしてください。ffplayを使用します。
 
+ふつう(piradio.py)版
+
 画面にはpygameを使用していますので、pygameで使えるフレームバッファが必要です。
 今のところ Python 2.7 用です
+
+Pirate Audio(piradio_pirate.py)版
+
+画面はPILで書いてます。Pirate Audioはフレームバッファとしては動作させませんが
+SPI液晶のPythonライブラリが必要になります。Pirate_README.txtを見てください。
+
 
 Radikoの再生スクリプトはあちこちにありますが、出所が明確ではないものが多いので新
 規に書いて、radiko.pyで実装してあります。Radikoプレミアムにも対応しています。エリ
@@ -78,3 +86,6 @@ STOP:     - 現在の再生を停止します。
 
 2020/05/29
 Pirate Audio対応版をリリース。詳しくはPirate_README.txtを。
+
+2020/05/30
+ちょいと修正など。ALSAのデバイスに対する注記も追加。
