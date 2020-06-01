@@ -101,7 +101,7 @@ class CTRL_SW:
     VOLUME_DOWN = 23
 
 # 音量(初期値)
-vol_val = 20
+vol_val = 8
 
 # 画面背景色
 sc_bg_color = (0,128,128)
@@ -138,6 +138,10 @@ station_per_page = 6
 p_nexec_count = 0
 # 実行しないで放置と判断するまでのタイムアウト
 p_nexec_timeout = 10
+
+# 音量調整用プロファイル(32段階)
+volume_profile = [ 0, 6, 9,12,15,18,21,24,27,30,33,36,39,42,45,48, \
+                  51,54,57,60,63,66,69,72,75,78,81,84,87,90,93,96 ]
 
 # GPIOの問題避け
 prev_pushed_time = 0
@@ -430,9 +434,10 @@ def p_volumectl(pinnum):
         CTRL_SW.VOLUME_UP
         if pinnum == CTRL_SW.VOLUME_UP:
             vol_val += 1
-            if vol_val >= 100:
-                vol_val = 100
-            vol_cmd = 'amixer %s sset %s %d%%,%d%% unmute > /dev/null 2>&1' % (radio_volume_device, radio_volume_ctl, vol_val, vol_val)
+            if vol_val >= 31:
+                vol_val = 31 
+            vol_target = volume_profile[vol_val]
+            vol_cmd = 'amixer %s sset %s %d%%,%d%% unmute > /dev/null 2>&1' % (radio_volume_device, radio_volume_ctl, vol_target, vol_target)
             os.system(vol_cmd)
     except:
         pass
@@ -442,13 +447,14 @@ def p_volumectl(pinnum):
             vol_val -= 1
             if vol_val <= 0:
                 vol_val = 0
-            vol_cmd = 'amixer %s sset %s %d%%,%d%% unmute > /dev/null 2>&1' % (radio_volume_device, radio_volume_ctl, vol_val, vol_val)
+            vol_target = volume_profile[vol_val]
+            vol_cmd = 'amixer %s sset %s %d%%,%d%% unmute > /dev/null 2>&1' % (radio_volume_device, radio_volume_ctl, vol_target, vol_target)
             os.system(vol_cmd)
     except:
         pass
 
     disp_update()
-    #print(vol_val)
+    #print(vol_target)
 
 # 画面表示更新
 def disp_update():
@@ -551,7 +557,7 @@ def main():
     try:
         CTRL_SW.STARTSTOP
         GPIO.setup(CTRL_SW.STARTSTOP,GPIO.IN,pull_up_down=GPIO.PUD_UP)
-        GPIO.add_event_detect(CTRL_SW.STARTSTOP, GPIO.FALLING, callback=p_startstop, bouncetime=300)
+        GPIO.add_event_detect(CTRL_SW.STARTSTOP, GPIO.FALLING, callback=p_startstop, bouncetime=500)
     except:
         pass
     try:
@@ -581,7 +587,9 @@ def main():
 
 
     # 音量初期値
-    vol_cmd = 'amixer %s sset PCM %d%%,%d%% unmute > /dev/null 2>&1' % (radio_volume_device, vol_val, vol_val)
+    #vol_cmd = 'amixer %s sset PCM %d%%,%d%% unmute > /dev/null 2>&1' % (radio_volume_device, vol_val, vol_val)
+    vol_target = volume_profile[vol_val]
+    vol_cmd = 'amixer %s sset %s %d%%,%d%% unmute > /dev/null 2>&1' % (radio_volume_device, radio_volume_ctl, vol_target, vol_target)
     os.system(vol_cmd)
     disp_update()
 
