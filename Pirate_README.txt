@@ -23,6 +23,7 @@ piradio_pirate.py がPirate Audio対応用です。フレームバッファ版�
 mopidyをインストールする必要はないので、入れなくてかまいません。というかmopidy
 入れてプレイヤーにしてしまうとラジオにならないです。
 
+raspi-configでSPIを有効にしておきます。
 SPI DACを使用するため /boot/config.txtに以下を追加します。
 
 dtoverlay=hifiberry-dac
@@ -80,3 +81,8 @@ SPI DACが2番目のデバイスとして認識されている場合にはasound
 
 PythonのモジュールST7789が必要になりますので、pipでインストールしてください。
 PILとかも必要になるのでソースを見て入れてください。
+
+だいたいこんな感じ(元から入っている場合もあるので足りなければ)
+pip install spi pillow gpio
+
+注：このバージョンもフォントがないと固まったようにみえるのでフォントを自分で入れてください
