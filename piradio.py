@@ -101,7 +101,7 @@ class CTRL_SW:
     VOLUME_DOWN = 23
 
 # 音量(初期値)
-vol_val = 10
+vol_val = 20
 
 # 画面背景色
 sc_bg_color = (0,128,128)
@@ -141,6 +141,9 @@ p_nexec_timeout = 10
 
 # GPIOの問題避け
 prev_pushed_time = 0
+
+# 再生停止コマンド
+stop_play_cmd = 'killall ffplay'
 
 # 局名リスト読み込み処理
 station_lists = []
@@ -271,18 +274,21 @@ except:
 def api_p_start():
     global p_selected
     global p_last_selected
+    global stop_play_cmd
     # 再生開始のWAITの表示
     popup_text('WAIT',(255,174,0))
     # 再生を強制停止
-    os.system('killall ffplay')
+    os.system(stop_play_cmd)
     time.sleep(0.5)
     station_num = p_selected
     (station_id, dummy1, dummy2, dummy3, p_method) = station_lists[station_num]
     # 再生方法がRadiko
     if p_method == 'radiko':
+        stop_play_cmd = 'killall ffplay'
         play_radiko(station_id,radiko_user,radiko_pass)
     # 再生方法がらじる
     if p_method == 'radiru':
+        stop_play_cmd = 'killall ffplay'
         play_radiru(station_id)
     #
     p_last_selected = p_selected
@@ -294,10 +300,11 @@ def api_p_start():
 
 # APIからの停止処理
 def api_p_stop():
+    global stop_play_cmd
     # 再生ストップの表示
     popup_text('STOP',(255,0,0))
     # 再生を停止
-    os.system('killall ffplay')
+    os.system(stop_play_cmd)
     time.sleep(0.5)
     disp_update()
     print("API-STOP")
@@ -305,9 +312,10 @@ def api_p_stop():
 
 # シグナルハンドラ(終了処理)
 def signal_handler(signal,stack):
+    global stop_play_cmd
     print('Got signal: Quiting...')
     api_server.shutdown()
-    os.system('killall ffplay')
+    os.system(stop_play_cmd)
     time.sleep(1)
     try:
         use_gui
@@ -325,6 +333,7 @@ def p_startstop(pinnum):
     global p_last_selected
     global p_nexec_count
     global p_nexec_timeout
+    global stop_play_cmd
 
     # GPIO割込みが2重検出される問題避け
     # 他のスイッチではあまり問題ではないがSTART/STOPだけは大問題なのでworkaround
@@ -343,7 +352,7 @@ def p_startstop(pinnum):
         # 再生ストップスタートのWAIT表示
         popup_text('STOP',(255,0,0))
         # 再生を停止
-        os.system('killall ffplay')
+        os.system(stop_play_cmd)
         time.sleep(0.5)
         do_pb = 0
         # 選局操作を行った後なら再度再生実行
@@ -356,6 +365,7 @@ def p_startstop(pinnum):
     if do_pb == 1:
 
         # 再生ストップスタートのWAIT表示
+        disp_update()
         popup_text('WAIT',(0,255,0))
 
         station_num = p_selected 
@@ -365,9 +375,11 @@ def p_startstop(pinnum):
         # 再生方法によって処理をわける(局リストのp_method)。他の方法で再生したければここに書く
         # 再生方法がRadiko
         if p_method == 'radiko':
+            stop_play_cmd = 'killall ffplay'
             play_radiko(station_id,radiko_user,radiko_pass)
         # 再生方法がらじる
         if p_method == 'radiru':
+            stop_play_cmd = 'killall ffplay'
             play_radiru(station_id)
         #
         p_last_selected = p_selected
@@ -595,7 +607,7 @@ def play_radiko(station, r_user="", r_pass=""):
     ret = radiko.get_radiko_info(station,r_user,r_pass)
     if ret != False:
         (authtoken, streamurl) = ret
-        radiko_cmd = "ffplay -nodisp -loglevel quiet -headers \"X-RADIKO-AUTHTOKEN: {0}\" -i {1} >/dev/null 2>&1 &".format(authtoken, streamurl)
+        radiko_cmd = "ffplay -volume 50 -nodisp -loglevel quiet -headers \"X-RADIKO-AUTHTOKEN: {0}\" -i {1} >/dev/null 2>&1 &".format(authtoken, streamurl)
         #print(radiko_cmd)
         try:
             radio_audio_driver
@@ -614,7 +626,7 @@ def play_radiko(station, r_user="", r_pass=""):
 
 #らじる再生
 def play_radiru(station):
-    radiru_cmd = 'ffplay -nodisp -loglevel quiet -i %s > /dev/null 2>&1 &' % station
+    radiru_cmd = 'ffplay -volume 50 -nodisp -loglevel quiet -i %s > /dev/null 2>&1 &' % station
     #print(radiru_cmd)
     try:
         radio_audio_driver
