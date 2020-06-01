@@ -87,7 +87,7 @@ class CTRL_SW:
     VOLUME_DOWN = 6 # B
 
 # 音量(初期値)
-vol_val = 30
+vol_val = 10
 
 # 画面背景色
 sc_bg_color = (0,200,200)
