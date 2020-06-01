@@ -29,12 +29,14 @@ dtoverlay=hifiberry-dac
 gpio=25=op,dh
 
 DACの音量制御がない(わからない)ので、ALSAのSoftVolumeを使います。
-/etc/asound.confに以下の内容を書きます。
 
+/usr/share/alsaにあるalsa.confの最後に以下を追記します。
+
+----------
 pcm.softvol {
     type            softvol
     slave {
-        pcm         "plughw:0"
+        pcm         "plughw:1"
     }
     control {
         name        "SoftMaster"
@@ -46,9 +48,12 @@ pcm.!default {
     type             plug
     slave.pcm       "softvol";
 }
+----------
+注:alsa.confに記述しても動作しない場合には /etc/asound.conf に上の内容を書いてください。
+(Raspbianのアップデートで挙動が変わってます)
 
-ここで注意ですが、pcm "plughw:0"のところがSPI DACを指すようにしてください。
-オンボードサウンド、HDMI等がある場合には "plughw:1" がSPI DACになる場合が
+ここで注意ですが、pcm "plughw:1"のところがSPI DACを指すようにしてください。
+オンボードサウンド、HDMI等がある場合には "plughw:0"や2がSPI DACになる場合が
 ありますので、正しくSPI DACを指すようにします。
 aplay -L で以下のようなエントリがSPI DACです。
 
