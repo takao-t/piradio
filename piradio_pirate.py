@@ -390,9 +390,9 @@ def p_volumectl(pinnum):
             if vol_val >= 100:
                 vol_val = 100
             vol_cmd = 'amixer %s sset %s %d%%,%d%% unmute > /dev/null 2>&1' % (radio_volume_device, radio_volume_ctl, vol_val, vol_val)
-            volume_text = "%d" % vol_val
-            popup_text(volume_text,(vol_popup_color))
-            time.sleep(0.2)
+            #volume_text = "%d" % vol_val
+            #popup_text(volume_text,(vol_popup_color))
+            #time.sleep(0.2)
             os.system(vol_cmd)
     except:
         pass
@@ -403,14 +403,14 @@ def p_volumectl(pinnum):
             if vol_val <= 0:
                 vol_val = 0
             vol_cmd = 'amixer %s sset %s %d%%,%d%% unmute > /dev/null 2>&1' % (radio_volume_device, radio_volume_ctl, vol_val, vol_val)
-            volume_text = "%d" % vol_val
-            popup_text(volume_text,(vol_popup_color))
-            time.sleep(0.2)
+            #volume_text = "%d" % vol_val
+            #popup_text(volume_text,(vol_popup_color))
+            #time.sleep(0.2)
             os.system(vol_cmd)
     except:
         pass
 
-    disp_update()
+    #disp_update()
     #print(vol_val)
 
 # 画面表示更新
