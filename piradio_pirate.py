@@ -141,6 +141,10 @@ p_nexec_count = 0
 # 実行しないで放置と判断するまでのタイムアウト
 p_nexec_timeout = 10
 
+# 音量調整用プロファイル(32段階)
+volume_profile = [ 0, 6, 9,12,15,18,21,24,27,30,33,36,39,42,45,48, \
+                  51,54,57,60,63,66,69,72,75,78,81,84,87,90,93,96 ]
+
 # GPIOの問題避け
 prev_pushed_time = 0
 
@@ -325,6 +329,7 @@ def p_startstop(pinnum):
     if do_pb == 1:
 
         # 再生ストップスタートのWAIT表示
+        disp_update()
         popup_text('WAIT',(0,255,0))
 
         station_num = p_selected 
@@ -387,9 +392,10 @@ def p_volumectl(pinnum):
         CTRL_SW.VOLUME_UP
         if pinnum == CTRL_SW.VOLUME_UP:
             vol_val += 1
-            if vol_val >= 100:
-                vol_val = 100
-            vol_cmd = 'amixer %s sset %s %d%%,%d%% unmute > /dev/null 2>&1' % (radio_volume_device, radio_volume_ctl, vol_val, vol_val)
+            if vol_val >= 31:
+                vol_val = 31 
+            vol_target = volume_profile[vol_val]
+            vol_cmd = 'amixer %s sset %s %d%%,%d%% unmute > /dev/null 2>&1' % (radio_volume_device, radio_volume_ctl, vol_target, vol_target)
             #volume_text = "%d" % vol_val
             #popup_text(volume_text,(vol_popup_color))
             #time.sleep(0.2)
@@ -402,7 +408,8 @@ def p_volumectl(pinnum):
             vol_val -= 1
             if vol_val <= 0:
                 vol_val = 0
-            vol_cmd = 'amixer %s sset %s %d%%,%d%% unmute > /dev/null 2>&1' % (radio_volume_device, radio_volume_ctl, vol_val, vol_val)
+            vol_target = volume_profile[vol_val]
+            vol_cmd = 'amixer %s sset %s %d%%,%d%% unmute > /dev/null 2>&1' % (radio_volume_device, radio_volume_ctl, vol_target, vol_target)
             #volume_text = "%d" % vol_val
             #popup_text(volume_text,(vol_popup_color))
             #time.sleep(0.2)
@@ -524,7 +531,9 @@ def main():
 
 
     # 音量初期値
-    vol_cmd = 'amixer %s sset %s %d%%,%d%% unmute > /dev/null 2>&1' % (radio_volume_device, radio_volume_ctl, vol_val, vol_val)
+    #vol_cmd = 'amixer %s sset %s %d%%,%d%% unmute > /dev/null 2>&1' % (radio_volume_device, radio_volume_ctl, vol_val, vol_val)
+    vol_target = volume_profile[vol_val]
+    vol_cmd = 'amixer %s sset %s %d%%,%d%% unmute > /dev/null 2>&1' % (radio_volume_device, radio_volume_ctl, vol_target, vol_target)
     os.system(vol_cmd)
     disp_update()
 
