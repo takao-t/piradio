@@ -93,3 +93,6 @@ Pirate Audio対応版をリリース。詳しくはPirate_README.txtを。
 
 2020/06/01
 音量調整を変更。32ステップ制御に。volume_profile[]を変更することでカーブを調整できます。
+
+筐体データはここにあります
+https://www.thingiverse.com/thing:4417542
