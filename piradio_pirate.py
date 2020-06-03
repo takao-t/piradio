@@ -85,8 +85,17 @@ class CTRL_SW:
     TUNE_UP = 20    # Y 20で動作しない場合は24に変更する
     VOLUME_UP = 5   # A
     VOLUME_DOWN = 6 # B
+# Line-out モデルの場合は音量調整要らないので以下の設定
+# で音量調整なしがお勧め
+#    STARTSTOP = 20  # Y 20で動作しない場合は24に変更する
+#    TUNE_DOWN = 5   # A
+#    TUNE_UP = 6     # B
 
-# 音量(初期値)
+# 音量(初期値:0-31)
+# Line-out モデルの場合は音量調整しないので最大(31)にする
+# またはレベル調整した固定値にする
+# 音量の調整が不要ならsoftvolを使わず直接hifiberryを指定
+# してかまわない
 vol_val = 10
 
 # 画面背景色
@@ -558,7 +567,7 @@ def play_radiko(station, r_user="", r_pass=""):
     ret = radiko.get_radiko_info(station,r_user,r_pass)
     if ret != False:
         (authtoken, streamurl) = ret
-        radiko_cmd = "ffplay -nodisp -loglevel quiet -headers \"X-RADIKO-AUTHTOKEN: {0}\" -i {1} >/dev/null 2>&1 &".format(authtoken, streamurl)
+        radiko_cmd = "ffplay -vn -infbuf -nodisp -loglevel quiet -headers \"X-RADIKO-AUTHTOKEN: {0}\" -i {1} >/dev/null 2>&1 &".format(authtoken, streamurl)
         #print(radiko_cmd)
         try:
             radio_audio_driver
@@ -577,7 +586,7 @@ def play_radiko(station, r_user="", r_pass=""):
 
 #らじる再生
 def play_radiru(station):
-    radiru_cmd = 'ffplay -nodisp -loglevel quiet -i %s > /dev/null 2>&1 &' % station
+    radiru_cmd = 'ffplay -vn -infbuf -nodisp -loglevel quiet -i %s > /dev/null 2>&1 &' % station
     #print(radiru_cmd)
     try:
         radio_audio_driver
