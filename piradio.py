@@ -615,7 +615,7 @@ def play_radiko(station, r_user="", r_pass=""):
     ret = radiko.get_radiko_info(station,r_user,r_pass)
     if ret != False:
         (authtoken, streamurl) = ret
-        radiko_cmd = "ffplay -volume 50 -nodisp -loglevel quiet -headers \"X-RADIKO-AUTHTOKEN: {0}\" -i {1} >/dev/null 2>&1 &".format(authtoken, streamurl)
+        radiko_cmd = "ffplay -nodisp -loglevel quiet -headers \"X-RADIKO-AUTHTOKEN: {0}\" -i {1} >/dev/null 2>&1 &".format(authtoken, streamurl)
         #print(radiko_cmd)
         try:
             radio_audio_driver
@@ -634,7 +634,7 @@ def play_radiko(station, r_user="", r_pass=""):
 
 #らじる再生
 def play_radiru(station):
-    radiru_cmd = 'ffplay -volume 50 -nodisp -loglevel quiet -i %s > /dev/null 2>&1 &' % station
+    radiru_cmd = 'ffplay -nodisp -loglevel quiet -i %s > /dev/null 2>&1 &' % station
     #print(radiru_cmd)
     try:
         radio_audio_driver
