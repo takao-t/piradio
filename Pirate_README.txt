@@ -13,12 +13,11 @@ piradio_pirate.py がPirate Audio対応用です。フレームバッファ版�
 ・下に表示する音量と時計はありません
 　小さすぎて見えないので実装していません
 
-・ボリュームはポップアップ表示です
 
 〇セットアップ
 
 このプログラム自体はPythonなので特に問題はないのですが、Pirate AudioのSPI DACが
-音量調整を持たないので1工夫が必要です。
+音量調整を持たないのでひと工夫が必要です。
 
 mopidyをインストールする必要はないので、入れなくてかまいません。というかmopidy
 入れてプレイヤーにしてしまうとラジオにならないです。
@@ -29,7 +28,9 @@ SPI DACを使用するため /boot/config.txtに以下を追加します。
 dtoverlay=hifiberry-dac
 gpio=25=op,dh
 
+
 DACの音量制御がない(わからない)ので、ALSAのSoftVolumeを使います。
+なお、Line-Outモデルは音量調整の必要は大抵は無いのでSoftVolumeを設定する必要はありません。
 
 /usr/share/alsaにあるalsa.confの最後に以下を追記します。
 
@@ -79,8 +80,10 @@ radio_volume_ctl = 'SoftMaster'
 
 SPI DACが2番目のデバイスとして認識されている場合にはasound.confでは"plughw:1:を設定し、pythonの-c0を-c1に変更してください。
 
+Line-OutモデルでSoftVolumeを使用していない場合にはオーディオ出力デバイスとしてSPI-DACを直接してしまえばよいです。(例:plughw:1)
+
 PythonのモジュールST7789が必要になりますので、pipでインストールしてください。
-PILとかも必要になるのでソースを見て入れてください。
+PILとかも必要になるのでソースを見て入れてください。(PILはaptで入れる方が簡単)
 
 だいたいこんな感じ(元から入っている場合もあるので足りなければ)
 pip install spi pillow gpio
