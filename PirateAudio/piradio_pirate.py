@@ -98,6 +98,9 @@ class CTRL_SW:
 # してかまわない
 vol_val = 10
 
+# ffplayのオプション
+FFPLAY_OPTIONS = '-vn -infbuf -nodisp -loglevel quiet'
+
 # 画面背景色
 sc_bg_color = (0,200,200)
 # 選択項目表示色
@@ -567,7 +570,7 @@ def play_radiko(station, r_user="", r_pass=""):
     ret = radiko.get_radiko_info(station,r_user,r_pass)
     if ret != False:
         (authtoken, streamurl) = ret
-        radiko_cmd = "ffplay -vn -infbuf -nodisp -loglevel quiet -headers \"X-RADIKO-AUTHTOKEN: {0}\" -i {1} >/dev/null 2>&1 &".format(authtoken, streamurl)
+        radiko_cmd = "ffplay {2} -headers \"X-RADIKO-AUTHTOKEN: {0}\" -i {1} >/dev/null 2>&1 &".format(authtoken, streamurl, FFPLAY_OPTIONS)
         #print(radiko_cmd)
         try:
             radio_audio_driver
