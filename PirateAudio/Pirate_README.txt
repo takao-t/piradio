@@ -16,6 +16,7 @@ piradio_pirate.py がPirate Audio対応用です。フレームバッファ版�
 
 〇セットアップ
 
+radiko.pyが必要なのでpiradio_pirate.pyと同じディレクトリにコピーしておいてください。
 このプログラム自体はPythonなので特に問題はないのですが、Pirate AudioのSPI DACが
 音量調整を持たないのでひと工夫が必要です。
 
