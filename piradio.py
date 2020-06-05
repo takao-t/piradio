@@ -637,7 +637,7 @@ def play_radiko(station, r_user="", r_pass=""):
 
 #らじる再生
 def play_radiru(station):
-    radiru_cmd = 'ffplay -vn -ingbuf -nodisp -loglevel quiet -i %s > /dev/null 2>&1 &' % station
+    radiru_cmd = 'ffplay -vn -infbuf -nodisp -loglevel quiet -i %s > /dev/null 2>&1 &' % station
     #print(radiru_cmd)
     try:
         radio_audio_driver
