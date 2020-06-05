@@ -120,7 +120,7 @@ vol_popup_color = (0,255,255)
 # 局名表示横幅
 station_disp_x = 240
 # 局名表示縦幅
-station_disp_y = 38
+station_disp_y = 37
 # 局名表示文字位置オフセット
 text_offset_x = 100
 text_offset_y = 4
