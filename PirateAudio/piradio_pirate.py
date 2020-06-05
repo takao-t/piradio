@@ -436,7 +436,7 @@ def p_volumectl(pinnum):
     except:
         pass
 
-    #disp_update()
+    disp_update()
     #print(vol_val)
 
 # 画面表示更新
