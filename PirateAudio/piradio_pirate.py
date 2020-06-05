@@ -109,6 +109,8 @@ b_bright = (220,220,220)
 # 暗表示色
 #b_dark = (96,96,96)
 b_dark = (160,160,160)
+# ビジー色
+b_busy = (255,0,0)
 # 局名テキスト表示色
 #st_text_color = (180, 180, 180)
 st_text_color = (0, 0, 0)
@@ -152,6 +154,8 @@ station_per_page = 6
 p_nexec_count = 0
 # 実行しないで放置と判断するまでのタイムアウト
 p_nexec_timeout = 10
+# 右下アイコン色
+b_icon_color = b_dark
 
 # 音量調整用プロファイル(32段階)
 volume_profile = [ 0, 6, 9,12,15,18,21,24,27,30,33,36,39,42,45,48, \
@@ -310,6 +314,7 @@ def p_startstop(pinnum):
     global p_last_selected
     global p_nexec_count
     global p_nexec_timeout
+    global b_icon_color
 
     # GPIO割込みが2重検出される問題避け
     # 他のスイッチではあまり問題ではないがSTART/STOPだけは大問題なのでworkaround
@@ -331,6 +336,7 @@ def p_startstop(pinnum):
         os.system('killall ffplay')
         time.sleep(0.5)
         do_pb = 0
+        b_icon_color = b_dark
         # 選局操作を行った後なら再度再生実行
         if p_selected != p_last_selected:
              do_pb = 1
@@ -340,6 +346,7 @@ def p_startstop(pinnum):
 
     if do_pb == 1:
 
+        b_icon_color = b_busy
         # 再生ストップスタートのWAIT表示
         disp_update()
         popup_text('WAIT',(0,255,0))
@@ -475,9 +482,14 @@ def disp_update():
                         sc_image.paste(st_logo,(0,disp_y_next+logo_offset_y),st_logo)
                     except:
                         pass
-            disp_y_next += 40
+            disp_y_next += (station_disp_y + 2)
             b_count += 1
 
+        # ボリューム値バー
+        tmp_corner = vol_val * 6
+        sc_draw.rectangle((0,232,tmp_corner,239),fill=(0,255,0),outline=(b_dark) )
+        #
+        sc_draw.rectangle((200,232,239,239),fill=(b_icon_color),outline=(b_dark) )
 
         st7789.display(sc_image)
     except:
