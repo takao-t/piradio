@@ -5,7 +5,7 @@
 #
 # 要るもの:
 # Raspberri Pi 3とか4とかZero Wとか
-# GPIOに繋ぐスイッチ5個
+# GPIOに繋ぐスイッチ5(2<)個
 # フレームバッファ(/dev/fbX)として使える液晶
 # このスクリプトでは320x240を想定
 # 画面にはpygameを使用
@@ -152,27 +152,10 @@ prev_pushed_time = 0
 # 再生停止コマンド
 stop_play_cmd = 'killall ffplay'
 
-# 局名リスト読み込み処理
+# 局名リスト
+num_stations = 0
 station_lists = []
-# For Python2
-with codecs.open(station_file, 'r', 'utf-8') as f:
-# For Python3
-#with open(station_file, 'r', encoding='utf-8') as f:
-    s_line = f.readline()
-    while s_line:
-        station_id = s_line.split(',',5)[0]
-        station_name = s_line.split(',',5)[1]
-        station_aname = s_line.split(',',5)[2]
-        station_logo = s_line.split(',',5)[3]
-        p_method = s_line.split(',',5)[4]
-        p_method = p_method.strip()
-        #print("%s : %s : %s : %s : %s" % (station_id, station_name, station_aname, station_logo,p_method))
-        station_lists.append( [station_id,station_name,station_aname,station_logo,p_method] )
-        s_line = f.readline()
-
-#局数
-num_stations = len(station_lists)
-#print(num_stations)
+texts = []
 
 try:
     use_gui
@@ -200,12 +183,12 @@ try:
     font4 = pygame.font.SysFont(None, 22)
 
     #表示局名生成
-    texts = []
-    for tmp_pos in range(num_stations):
-        (dummy1, station_text, dummy2, dummy3, dummy4) = station_lists[tmp_pos]
-        if station_text == "":
-            station_text = "  "
-        texts.append( font1.render(station_text, True, st_text_color) )
+    #texts = []
+    #for tmp_pos in range(num_stations):
+    #    (dummy1, station_text, dummy2, dummy3, dummy4) = station_lists[tmp_pos]
+    #    if station_text == "":
+    #        station_text = "  "
+    #    texts.append( font1.render(station_text, True, st_text_color) )
 
     # 局名背景表示
     station_bg = []
@@ -342,11 +325,12 @@ def p_startstop(pinnum):
     global p_nexec_timeout
     global stop_play_cmd
 
+
     # GPIO割込みが2重検出される問題避け
     # 他のスイッチではあまり問題ではないがSTART/STOPだけは大問題なのでworkaround
     global prev_pushed_time
     # ガードタイムはこの処理(0.5+3) +0.5で設定
-    guard_time = 4
+    guard_time = 5
 
     # GPIO割込みの2重検出避け
     pushed_time = time.time()
@@ -360,7 +344,7 @@ def p_startstop(pinnum):
         popup_text('STOP',(255,0,0))
         # 再生を停止
         os.system(stop_play_cmd)
-        time.sleep(0.5)
+        time.sleep(1)
         do_pb = 0
         # 選局操作を行った後なら再度再生実行
         if p_selected != p_last_selected:
@@ -388,14 +372,37 @@ def p_startstop(pinnum):
         if p_method == 'radiru':
             stop_play_cmd = 'killall ffplay'
             play_radiru(station_id)
+        # 外部コマンド実行
+        if p_method == 'COMMAND':
+            try:
+                station_id
+                if station_id != "":
+                    os.system(station_id)
+            except:
+                pass
+            p_selected = p_last_selected
         #
-        p_last_selected = p_selected
-        p_nexec_count = 0
-        # WAIT表示のままちょいまち
-        time.sleep(3)
+        else:
+            p_last_selected = p_selected
+            p_nexec_count = 0
+        # メニューリロード処理
+        if p_method == 'MENU':
+            try:
+                station_id
+                p_last_selected = 0
+                p_selected  = 0
+                read_stations("","",station_id)
+                time.sleep(1)
+                disp_update()
+            except:
+                pass
+        else:
+            # WAIT表示のままちょいまち
+            time.sleep(3)
 
     #元画面再表示
     disp_update()
+
 
 # 選局
 def p_tunectl(pinnum):
@@ -541,6 +548,75 @@ def popup_text(text,color):
     except:
         pass
 
+
+# 局名リスト読み込み処理
+def read_stations(signal="",frame="",filename=""):
+
+    global num_stations
+    global station_lists
+    global texts
+    global p_selected
+    global p_last_selected
+
+    #print(signal)
+    #print(frame)
+    #print(filename)
+
+
+    #
+    try:
+        filename
+        if filename != "":
+            load_fn = filename
+            #print('exsplicit load')
+        else:
+            load_fn = station_file
+    except:
+        load_fn = station_file
+
+    try:
+        # For Python2
+        with codecs.open(load_fn, 'r', 'utf-8') as f:
+        # For Python3
+        #with open(load_fn, 'r', encoding='utf-8') as f:
+            num_stations = 0
+            texts = []
+            station_lists = []
+            s_line = f.readline()
+            while s_line:
+                station_id = s_line.split(',',5)[0]
+                station_name = s_line.split(',',5)[1]
+                station_aname = s_line.split(',',5)[2]
+                station_logo = s_line.split(',',5)[3]
+                p_method = s_line.split(',',5)[4]
+                p_method = p_method.strip()
+                #print("%s : %s : %s : %s : %s" % (station_id, station_name, station_aname, station_logo,p_method))
+                station_lists.append( [station_id,station_name,station_aname,station_logo,p_method] )
+                s_line = f.readline()
+
+        #局数
+        num_stations = len(station_lists)
+        #print(num_stations)
+        #現在選択位置が全局数より大きければ初期化
+        if p_selected > num_stations:
+            p_selected = 0
+            p_last_selected = 0
+    except:
+        pass
+
+    #表示局名生成
+    try:
+        use_gui
+        texts = []
+        for tmp_pos in range(num_stations):
+            (dummy1, station_text, dummy2, dummy3, dummy4) = station_lists[tmp_pos]
+            if station_text == "":
+                station_text = "  "
+            texts.append( font1.render(station_text, True, st_text_color) )
+    except:
+        pass
+
+
 # メイン処理
 def main():
 
@@ -552,6 +628,10 @@ def main():
     signal.signal(signal.SIGHUP, signal_handler)
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGQUIT, signal_handler)
+
+    # 局リスト再読み込み
+    signal.signal(signal.SIGUSR1, read_stations)
+
 
     # GPIOセットアップ
     GPIO.setwarnings(False)
@@ -588,6 +668,8 @@ def main():
     except:
         pass
 
+    #局名リスト初期化
+    read_stations("","",station_file)
 
     # 音量初期値
     #vol_cmd = 'amixer %s sset PCM %d%%,%d%% unmute > /dev/null 2>&1' % (radio_volume_device, vol_val, vol_val)

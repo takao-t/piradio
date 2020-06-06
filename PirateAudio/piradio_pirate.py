@@ -164,27 +164,11 @@ volume_profile = [ 0, 6, 9,12,15,18,21,24,27,30,33,36,39,42,45,48, \
 # GPIOの問題避け
 prev_pushed_time = 0
 
-# 局名リスト読み込み処理
+# 局名リスト
 station_lists = []
-# For Python2
-with codecs.open(station_file, 'r', 'utf-8') as f:
-# For Python3
-#with open(station_file, 'r', encoding='utf-8') as f:
-    s_line = f.readline()
-    while s_line:
-        station_id = s_line.split(',',5)[0]
-        station_name = s_line.split(',',5)[1]
-        station_aname = s_line.split(',',5)[2]
-        station_logo = s_line.split(',',5)[3]
-        p_method = s_line.split(',',5)[4]
-        p_method = p_method.strip()
-        #print("%s : %s : %s : %s : %s" % (station_id, station_name, station_aname, station_logo,p_method))
-        station_lists.append( [station_id,station_name,station_aname,station_logo,p_method] )
-        s_line = f.readline()
-
 #局数
-num_stations = len(station_lists)
-#print(num_stations)
+num_stations = 0
+
 
 try:
     use_gui
@@ -363,10 +347,32 @@ def p_startstop(pinnum):
         if p_method == 'radiru':
             play_radiru(station_id)
         #
+        # 外部コマンド実行
+        if p_method == 'COMMAND':
+            try:
+                station_id
+                if station_id != "":
+                    os.system(station_id)
+            except:
+                pass
+            p_selected = p_last_selected
+        #
         p_last_selected = p_selected
         p_nexec_count = 0
-        # WAIT表示のままちょいまち
-        time.sleep(3)
+        # メニューリロード処理
+        if p_method == 'MENU':
+            try:
+                station_id
+                p_last_selected = 0
+                p_selected  = 0
+                read_stations("","",station_id)
+                time.sleep(1)
+                disp_update()
+            except:
+                pass
+        else:
+            # WAIT表示のままちょいまち
+            time.sleep(3)
 
     #元画面再表示
     disp_update()
@@ -506,6 +512,55 @@ def popup_text(text,color):
     except:
         pass
 
+# 局名リスト読み込み処理
+def read_stations(signal="",frame="",filename=""):
+
+    global station_lists
+    global num_stations
+    global p_selected
+    global p_last_selected
+
+    #
+    try:
+        filename
+        if filename != "":
+            load_fn = filename
+            #print('exsplicit load')
+        else:
+            load_fn = station_file
+    except:
+        load_fn = station_file
+
+    try:
+        # For Python2
+        with codecs.open(load_fn, 'r', 'utf-8') as f:
+        # For Python3
+        #with open(load_fn, 'r', encoding='utf-8') as f:
+            num_stations = 0
+            station_lists = []
+            s_line = f.readline()
+            while s_line:
+                station_id = s_line.split(',',5)[0]
+                station_name = s_line.split(',',5)[1]
+                station_aname = s_line.split(',',5)[2]
+                station_logo = s_line.split(',',5)[3]
+                p_method = s_line.split(',',5)[4]
+                p_method = p_method.strip()
+                #print("%s : %s : %s : %s : %s" % (station_id, station_name, station_aname, station_logo,p_method))
+                station_lists.append( [station_id,station_name,station_aname,station_logo,p_method] )
+                s_line = f.readline()
+
+        #局数
+        num_stations = len(station_lists)
+        #print(num_stations)
+        #現在選択位置が全局数より大きければ初期化
+        if p_selected > num_stations:
+            p_selected = 0
+            p_last_selected = 0
+    except:
+        pass
+
+
 # メイン処理
 def main():
 
@@ -517,6 +572,8 @@ def main():
     signal.signal(signal.SIGHUP, signal_handler)
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGQUIT, signal_handler)
+    # 局リスト再読み込み
+    signal.signal(signal.SIGUSR1, read_stations)
 
     # GPIOセットアップ
     GPIO.setwarnings(False)
@@ -553,6 +610,8 @@ def main():
     except:
         pass
 
+    #局名リスト初期化
+    read_stations("","",station_file)
 
     # 音量初期値
     #vol_cmd = 'amixer %s sset %s %d%%,%d%% unmute > /dev/null 2>&1' % (radio_volume_device, radio_volume_ctl, vol_val, vol_val)
