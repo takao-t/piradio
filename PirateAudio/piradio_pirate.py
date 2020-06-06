@@ -55,7 +55,7 @@ else:
 #  オーディオドライバ
 radio_audio_driver = 'alsa'
 # 出力デバイス
-# Pirate AudioのSPI DACを使用するので注意
+# Pirate AudioのI2S DACを使用するので注意
 radio_audio_device = 'softvol'
 # 音量調整デバイス(amixerの引数: -c0 -c1など)
 radio_volume_device = '-c0'
