@@ -87,20 +87,8 @@ START:RN1 - Radikoの識別子 RN1 を再生開始します
 
 STOP:     - 現在の再生を停止します。
 
-2020/05/28
-若干の問題に対処とPython3対応しました。Python3で動かしたい場合には中の"Python3"を検索して修正箇所をみてください。デフォルトはPython2です。
-
-2020/05/29
-Pirate Audio対応版をリリース。詳しくはPirate_README.txtを。
-
-2020/05/30
-ちょいと修正など。ALSAのデバイスに対する注記も追加。
-
-2020/06/01
-音量調整を変更。32ステップ制御に。volume_profile[]を変更することでカーブを調整できます。
-
-2020/06/06
-メニューの疑似的な階層化をサポートしました
-
 筐体データはここにあります
 https://www.thingiverse.com/thing:4417542
+
+アップデート情報及び詳細な使い方等はWikiにあります
+https://github.com/takao-t/piradio/wiki
