@@ -540,14 +540,15 @@ def read_stations(signal="",frame="",filename=""):
             station_lists = []
             s_line = f.readline()
             while s_line:
-                station_id = s_line.split(',',5)[0]
-                station_name = s_line.split(',',5)[1]
-                station_aname = s_line.split(',',5)[2]
-                station_logo = s_line.split(',',5)[3]
-                p_method = s_line.split(',',5)[4]
-                p_method = p_method.strip()
-                #print("%s : %s : %s : %s : %s" % (station_id, station_name, station_aname, station_logo,p_method))
-                station_lists.append( [station_id,station_name,station_aname,station_logo,p_method] )
+                if not s_line.startswith('#'):
+                    station_id = s_line.split(',',5)[0]
+                    station_name = s_line.split(',',5)[1]
+                    station_aname = s_line.split(',',5)[2]
+                    station_logo = s_line.split(',',5)[3]
+                    p_method = s_line.split(',',5)[4]
+                    p_method = p_method.strip()
+                    #print("%s : %s : %s : %s : %s" % (station_id, station_name, station_aname, station_logo,p_method))
+                    station_lists.append( [station_id,station_name,station_aname,station_logo,p_method] )
                 s_line = f.readline()
 
         #局数
