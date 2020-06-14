@@ -163,6 +163,8 @@ try:
     pygame.init()
     screen = pygame.display.set_mode((320, 240))
     pygame.mouse.set_visible(False)
+    # PyGameがオーディオデバイスを掴むので解放
+    pygame.mixer.quit()
 
     #背景色
     screen.fill(sc_bg_color)
@@ -324,7 +326,6 @@ def p_startstop(pinnum):
     global p_nexec_count
     global p_nexec_timeout
     global stop_play_cmd
-
 
     # GPIO割込みが2重検出される問題避け
     # 他のスイッチではあまり問題ではないがSTART/STOPだけは大問題なのでworkaround
