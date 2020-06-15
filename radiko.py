@@ -53,10 +53,10 @@ def radiko_p_login(r_user="", r_pass="") :
         sess = requests.session()
 
         headers = {
-            'User-Agent': 'radiko/0.0.1',
+            'User-Agent': 'radiko/4.0.1',
             'Accept': '*/*',
             'x-radiko-app': 'pc_html5',
-            'x-radiko-app-version': '0.0.1',
+            'x-radiko-app-version': '4.0.1',
             'x-radiko-device': 'pc'
         }
 
@@ -138,16 +138,19 @@ def get_radiko_info(station, r_user="", r_pass=""):
     #print("## 認証ステップ1 ##")
 
     headers = {
-        'User-Agent': 'radiko/0.0.1',
+        'User-Agent': 'radiko/4.0.1',
         'Accept': '*/*',
         'x-radiko-user': 'dummy_user',
         'x-radiko-app': 'pc_html5',
-        'x-radiko-app-version': '0.0.1',
+        'x-radiko-app-version': '4.0.1',
         'x-radiko-device': 'pc'
     }
 
     # GETリクエストして認証(1)
-    res1 = requests.get('https://radiko.jp/v2/api/auth1', headers=headers, cookies=radiko_cookie)
+    if len(radiko_cookie) == 0:
+        res1 = requests.get('https://radiko.jp/v2/api/auth1', headers=headers)
+    else:
+        res1 = requests.get('https://radiko.jp/v2/api/auth1', headers=headers, cookies=radiko_cookie)
 
     # Status OKでなければ継続しない
     if res1.status_code != 200:
@@ -175,16 +178,21 @@ def get_radiko_info(station, r_user="", r_pass=""):
     #print("## 認証ステップ2 ##")
 
     headers = {
-        'User-Agent': 'curl/7.52.1',
+        'User-Agent': 'radiko/4.0.1',
         'Accept': '*/*',
         'x-radiko-user': 'dummy_user',
+        'x-radiko-app': 'pc_html5',
         'X-RADIKO-AUTHTOKEN': radiko_authtoken,
         'x-radiko-partialkey': partial_key,
+        'x-radiko-app-version': '4.0.1',
         'x-radiko-device': 'pc'
     }
 
     # パーシャルキーを使って認証(2)
-    res2 = requests.get('https://radiko.jp/v2/api/auth2', headers=headers, cookies=radiko_cookie)
+    if len(radiko_cookie) == 0:
+        res2 = requests.get('https://radiko.jp/v2/api/auth2', headers=headers)
+    else:
+        res2 = requests.get('https://radiko.jp/v2/api/auth2', headers=headers, cookies=radiko_cookie)
 
     #print(res2)
 
@@ -197,8 +205,11 @@ def get_radiko_info(station, r_user="", r_pass=""):
 
     # 認証が完了したので再生URLを取得
     # f-radikoとc-radikoの2種類があるらしいのでXMLから取得してみる
-    req_url = "http://radiko.jp/v2/station/stream_smh_multi/%s.xml" % station
-    res3 = requests.get(req_url, headers=headers, cookies=radiko_cookie)
+    req_url = "https://radiko.jp/v2/station/stream_smh_multi/%s.xml" % station
+    if len(radiko_cookie) == 0:
+        res3 = requests.get(req_url, headers=headers)
+    else:
+        res3 = requests.get(req_url, headers=headers, cookies=radiko_cookie)
 
     # Status OKでなければ継続しない
     #print(res3)
