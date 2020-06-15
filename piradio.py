@@ -99,6 +99,11 @@ class CTRL_SW:
     TUNE_DOWN = 22
     VOLUME_UP = 21
     VOLUME_DOWN = 23
+#プルアップを外で行いGPIOに接続した場合にピンを指定する
+#   PULLUP = 6
+
+# 液晶のバックライトをGPIOに接続した場合にピンを指定する
+# BACKLIGHT = 5
 
 # 音量(初期値)
 vol_val = 8
@@ -639,6 +644,14 @@ def main():
     GPIO.setwarnings(False)
     GPIO.setmode(GPIO.BCM)
     # 各ピンを入力,プルアップありにしピンの割り込みハンドラを設定
+    # 外部プルアップ制御時
+    try:
+        CTRL_SW.PULLUP
+        GPIO.setup(CTRL_SW.PULLUP,GPIO.OUT)
+        GPIO.output(CTRL_SW.PULLUP,GPIO.HIGH)
+    except:
+        pass
+    # 各スイッチのピンセットアップ
     try:
         CTRL_SW.STARTSTOP
         GPIO.setup(CTRL_SW.STARTSTOP,GPIO.IN,pull_up_down=GPIO.PUD_UP)
@@ -667,6 +680,13 @@ def main():
         CTRL_SW.VOLUME_DOWN
         GPIO.setup(CTRL_SW.VOLUME_DOWN,GPIO.IN,pull_up_down=GPIO.PUD_UP)
         GPIO.add_event_detect(CTRL_SW.VOLUME_DOWN, GPIO.FALLING, callback=p_volumectl, bouncetime=300)
+    except:
+        pass
+    # バックライト制御
+    try:
+        BACKLIGHT
+        GPIO.setup(BACKLIGHT,GPIO.OUT)
+        GPIO.output(BACKLIGHT,GPIO.HIGH)
     except:
         pass
 
