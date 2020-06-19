@@ -1,0 +1,3 @@
+alsa;softvol;-c0;SoftMaster;10,スピーカー,SPEAKER,,AUDIOSET
+alsa;bt-headphones;;;10,BTヘッドフォン,BT-HEADPHONES,,AUDIOSET
+stations/station_list,戻る,BACK,SYS_MENU.png,MENU
