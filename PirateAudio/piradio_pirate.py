@@ -425,7 +425,11 @@ def p_pbs_control():
             p_selected = p_last_selected
         # オーディオデバイス切換
         if p_method == 'AUDIOSET':
-            os.system(stop_play_cmd)
+            try:
+                stop_play_cmd
+                os.system(stop_play_cmd)
+            except:
+                pass
             try:
                 station_id
                 audio_dev_set(station_id)

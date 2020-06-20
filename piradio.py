@@ -10,9 +10,6 @@
 # このスクリプトでは320x240を想定
 # 画面にはpygameを使用
 # 要するにpygameで表示できればOK
-# 日本語表示用の適当なTTFフォント(フォントがないと止まるので注意)
-# このソース内をfont1で検索して書き換え位置を探して
-# ffmpeg(ffplay)
 
 import sys
 import signal
@@ -35,6 +32,7 @@ import codecs
 # Radiko処理用
 import radiko
 
+
 # 引数処理
 if "-nogui" in sys.argv:
     try:
@@ -55,31 +53,62 @@ try:
 except:
     pass
 
-# システム設定
-# 
-# オーディオ関連の設定は alsa_README.txt も参照のこと
-#  オーディオドライバ
-radio_audio_driver = 'alsa'
-#  出力デバイス
-#radio_audio_device = 'plughw:CARD=Device,DEV=0'
-#radio_audio_device = 'plughw:CARD=ALSA,DEV=0'
-radio_audio_device = 'plughw:0'
-#radio_audio_device = 'plughw:1'
-# 音量調整デバイス(amixerの引数: -c0 -c1など)
-#radio_volume_device = '-c1'
-radio_volume_device = '-c0'
-# 音量調整コントローラ名
-#radio_volume_ctl = 'PCM'
-radio_volume_ctl = 'Headphone'
-# APIのポート(APIを使用しない場合はコメントアウト)
-piradio_api_port = 8899
+import local_settings
+
+try:
+    radio_audio_driver = local_settings.radio_audio_driver
+except:
+    radio_audio_driver = 'alsa'
+try:
+    radio_audio_device = local_settings.radio_audio_device
+except:
+    radio_audio_device = 'plughw:0'
+try:
+    radio_volume_device = local_settings.radio_volume_device
+except:
+    radio_volume_device = 'Headdphone'
+try:
+    radio_volume_ctl = local_settings.radio_volume_ctl
+except:
+    radio_volume_ctl = '-c0'
+try:
+    piradio_api_port = local_settings.radio_api_port
+except:
+    pass
+try:
+    jp_font_to_use = local_settings.jp_font
+except:
+    jp_font_to_use = "mplus-1p-medium.ttf"
+
+#オーディオデバイスをリスト化
+audio_list = radio_audio_driver + ';' + radio_audio_device + ';' + radio_volume_device + ';' + radio_volume_ctl
 
 # Radikoプレミアムでエリアフリーを使う場合には設定する
-radiko_user = ''
-radiko_pass = ''
+try:
+    radiko_user = local_settings.radiko_user
+    radiko_pass = local_settings.radiko_pass
+except:
+    pass
+
+# 制御用スイッチ
+try:
+    CTRL_SW = local_settings.CTRL_SW
+except:
+    pass
+# バックライト制御ピン
+try:
+    BACKLIGHT = local_settings.BACKLIGHT
+except:
+    pass
+# 音量(初期値)
+try:
+    vol_val = local_settings.vol_val
+except:
+    vol_val = 10
 
 # 局設定リストのファイル
-station_file = 'stations/station_list'
+#station_file = 'stations/station_list'
+station_file = 'stations/japan_list'
 # ロゴファイルのパス
 station_logo_path = 'stations/'
 
@@ -87,29 +116,10 @@ station_logo_path = 'stations/'
 # pygameで使用するフレームバッファだけあればOK
 os.putenv('SDL_FBDEV', '/dev/fb1')
 
-# 制御用スイッチ:GPIO番号(BCM)
-# 注: 使用しないスイッチはコメントアウトして変数をセットしない
-#     例えばTUNE_DOWNを指定しなければ合計4ボタンで実装できる
-#     音量調整しない場合なら最低2ボタンでも可能
-#     ただし再生停止ボタンは必須
-# スイッチを接続したGPIO番号に書き換える
-class CTRL_SW:
-    STARTSTOP = 18
-    TUNE_UP = 27
-    TUNE_DOWN = 22
-    VOLUME_UP = 21
-    VOLUME_DOWN = 23
-#プルアップを外で行いGPIOに接続した場合にピンを指定する
-#   PULLUP = 6
-
-# 液晶のバックライトをGPIOに接続した場合にピンを指定する
-# BACKLIGHT = 5
-
-# 音量(初期値)
-vol_val = 8
-
 # ffplayのオプション
 FFPLAY_OPTIONS = '-vn -infbuf -nodisp -loglevel quiet'
+# EQでバスブーストする場合のサンプル
+#FFPLAY_OPTIONS = '-vn -af "firequalizer=gain_entry=\'entry(0,+8);entry(250,+6)\'" -infbuf -nodisp -loglevel quiet'
 
 # 画面背景色
 sc_bg_color = (0,128,128)
@@ -146,10 +156,33 @@ station_per_page = 6
 p_nexec_count = 0
 # 実行しないで放置と判断するまでのタイムアウト
 p_nexec_timeout = 10
+# 再生が押されたかどうか
+g_ps_pressed = 0
+# 再生方法受け渡し
+g_p_method = ''
 
 # 音量調整用プロファイル(32段階)
 volume_profile = [ 0, 6, 9,12,15,18,21,24,27,30,33,36,39,42,45,48, \
                   51,54,57,60,63,66,69,72,75,78,81,84,87,90,93,96 ]
+
+## オーディオデバイス(内部処理用)
+class AUDIODEV:
+    try:
+        DRIVER = radio_audio_driver
+    except:
+        pass
+    try:
+        OUTDEV = radio_audio_device
+    except:
+        pass
+    try:
+        VOLDEV = radio_volume_device
+    except:
+        pass
+    try:
+        VCONT  = radio_volume_ctl
+    except:
+        pass
 
 # GPIOの問題避け
 prev_pushed_time = 0
@@ -168,8 +201,8 @@ try:
     pygame.init()
     screen = pygame.display.set_mode((320, 240))
     pygame.mouse.set_visible(False)
-    # PyGameがオーディオデバイスを掴むので解放
     pygame.mixer.quit()
+
 
     #背景色
     screen.fill(sc_bg_color)
@@ -181,7 +214,7 @@ try:
     #font1 = pygame.font.Font("ipaexg.ttf", 24)
     #font1 = pygame.font.Font("azukiLB.ttf", 24)
     #font1 = pygame.font.Font("TanukiMagic.ttf", 24)
-    font1 = pygame.font.Font("mplus-1p-medium.ttf", 20)
+    font1 = pygame.font.Font(jp_font_to_use, 20)
     # 音量表示用
     font2 = pygame.font.SysFont(None, 128)
     # "WAIT"表示用
@@ -291,7 +324,7 @@ def api_p_start():
     p_last_selected = p_selected
     p_nexec_count = 0
     # WAIT表示のままちょいまち
-    time.sleep(3)
+    time.sleep(1)
     disp_update()
     print("API-PLAY : %s" % station_id)
 
@@ -311,7 +344,10 @@ def api_p_stop():
 def signal_handler(signal,stack):
     global stop_play_cmd
     print('Got signal: Quiting...')
-    api_server.shutdown()
+    try:
+        api_server.shutdown()
+    except:
+        pass
     os.system(stop_play_cmd)
     time.sleep(1)
     try:
@@ -322,30 +358,21 @@ def signal_handler(signal,stack):
     GPIO.cleanup()
     sys.exit()
 
-# 再生/停止
-def p_startstop(pinnum):
-    #print(pinnum)
+# 再生/停止サブ処理
+def pbs_control_sub():
 
     global p_selected
     global p_last_selected
     global p_nexec_count
     global p_nexec_timeout
     global stop_play_cmd
+    global g_p_method
 
-    # GPIO割込みが2重検出される問題避け
-    # 他のスイッチではあまり問題ではないがSTART/STOPだけは大問題なのでworkaround
-    global prev_pushed_time
-    # ガードタイムはこの処理(0.5+3) +0.5で設定
-    guard_time = 5
-
-    # GPIO割込みの2重検出避け
-    pushed_time = time.time()
-    if (pushed_time - prev_pushed_time) < guard_time:
-        return()
-    prev_pushed_time = time.time()
+    p_method = g_p_method
 
     try:
-        res = subprocess.check_output(["pgrep","ffplay"])
+        stop_arg = stop_play_cmd.split(' ')
+        res = subprocess.check_output(["pgrep",stop_arg[1]])
         # 再生ストップスタートのWAIT表示
         popup_text('STOP',(255,0,0))
         # 再生を停止
@@ -365,7 +392,7 @@ def p_startstop(pinnum):
         disp_update()
         popup_text('WAIT',(0,255,0))
 
-        station_num = p_selected 
+        station_num = p_selected
         (station_id, dummy1, dummy2, dummy3, p_method) = station_lists[station_num]
         #print(station_id)
         #print(p_method)
@@ -374,11 +401,39 @@ def p_startstop(pinnum):
         if p_method == 'radiko':
             stop_play_cmd = 'killall ffplay'
             play_radiko(station_id,radiko_user,radiko_pass)
+            # WAIT表示のままちょいまち
+            time.sleep(1)
         # 再生方法がらじる
         if p_method == 'radiru':
             stop_play_cmd = 'killall ffplay'
             play_radiru(station_id)
-        # 外部コマンド実行
+            # WAIT表示のままちょいまち
+            time.sleep(1)
+        p_last_selected = p_selected
+    disp_update()
+
+
+# 再生/停止(実処理)
+def p_pbs_control():
+
+    global p_selected
+    global p_last_selected
+    global p_nexec_count
+    global p_nexec_timeout
+    global stop_play_cmd
+    global g_p_method
+    global g_ps_pressed
+
+    station_num = p_selected
+    (station_id, dummy1, dummy2, dummy3, p_method) = station_lists[station_num]
+
+    g_p_method = p_method
+
+    if p_method == 'radiko' or p_method == 'radiru':
+        g_ps_pressed = 1
+        #pbs_control_sub()
+    else:
+        # 外部コマンド
         if p_method == 'COMMAND':
             try:
                 station_id
@@ -387,10 +442,6 @@ def p_startstop(pinnum):
             except:
                 pass
             p_selected = p_last_selected
-        #
-        else:
-            p_last_selected = p_selected
-            p_nexec_count = 0
         # メニューリロード処理
         if p_method == 'MENU':
             try:
@@ -402,9 +453,47 @@ def p_startstop(pinnum):
                 disp_update()
             except:
                 pass
-        else:
-            # WAIT表示のままちょいまち
-            time.sleep(3)
+            p_selected = p_last_selected
+        # オーディオデバイス切換
+        if p_method == 'AUDIOSET':
+            try:
+                stop_play_cmd
+                os.system(stop_play_cmd)
+            except:
+                pass
+            try:
+                station_id
+                audio_dev_set(station_id)
+                popup_text('OK',(255,0,0))
+                time.sleep(1)
+            except:
+                pass
+
+
+
+# 再生/停止ボタン処理
+def p_startstop(pinnum):
+    #print(pinnum)
+
+    global p_selected
+    global p_last_selected
+    global p_nexec_count
+    global p_nexec_timeout
+    global stop_play_cmd
+
+
+    # GPIO割込みが2重検出される問題避け
+    # 他のスイッチではあまり問題ではないがSTART/STOPだけは大問題なのでworkaround
+    global prev_pushed_time
+    guard_time = 0.2
+
+    # GPIO割込みの2重検出避け
+    pushed_time = time.time()
+    if (pushed_time - prev_pushed_time) < guard_time:
+        return()
+    prev_pushed_time = time.time()
+
+    p_pbs_control()
 
     #元画面再表示
     disp_update()
@@ -453,7 +542,7 @@ def p_volumectl(pinnum):
             if vol_val >= 31:
                 vol_val = 31 
             vol_target = volume_profile[vol_val]
-            vol_cmd = 'amixer %s sset %s %d%%,%d%% unmute > /dev/null 2>&1' % (radio_volume_device, radio_volume_ctl, vol_target, vol_target)
+            vol_cmd = 'amixer %s sset %s %d%%,%d%% unmute > /dev/null 2>&1' % (AUDIODEV.VOLDEV, AUDIODEV.VCONT, vol_target, vol_target)
             os.system(vol_cmd)
     except:
         pass
@@ -464,7 +553,7 @@ def p_volumectl(pinnum):
             if vol_val <= 0:
                 vol_val = 0
             vol_target = volume_profile[vol_val]
-            vol_cmd = 'amixer %s sset %s %d%%,%d%% unmute > /dev/null 2>&1' % (radio_volume_device, radio_volume_ctl, vol_target, vol_target)
+            vol_cmd = 'amixer %s sset %s %d%%,%d%% unmute > /dev/null 2>&1' % (AUDIODEV.VOLDEV, AUDIODEV.VCONT, vol_target, vol_target)
             os.system(vol_cmd)
     except:
         pass
@@ -554,6 +643,34 @@ def popup_text(text,color):
     except:
         pass
 
+# オーディオデバイス変更処理
+def audio_dev_set(list):
+
+    global AUDIODEV
+    global vol_val
+
+    audio_setting = list.split(';')
+    #print(audio_setting)
+
+    AUDIODEV.DRIVER = audio_setting[0]
+    AUDIODEV.OUTDEV = audio_setting[1]
+    AUDIODEV.VOLDEV = audio_setting[2]
+    AUDIODEV.VCONT  = audio_setting[3]
+    try:
+        #print(int(audio_setting[4]))
+        audio_setting[4]
+        vol_val = int(audio_setting[4])
+    except:
+        pass
+
+    #print(vol_val)
+
+    #音量設定しなおし
+    vol_target = volume_profile[vol_val]
+    vol_cmd = 'amixer %s sset %s %d%%,%d%% unmute > /dev/null 2>&1' % (AUDIODEV.VOLDEV, AUDIODEV.VCONT, vol_target, vol_target)
+    os.system(vol_cmd)
+    disp_update()
+
 
 # 局名リスト読み込み処理
 def read_stations(signal="",frame="",filename=""):
@@ -630,6 +747,7 @@ def main():
     global p_nexec_count
     global p_selected
     global p_last_selected
+    global g_ps_pressed
 
     # シグナル(HUP,INT,QUITで終了)
     signal.signal(signal.SIGHUP, signal_handler)
@@ -693,15 +811,22 @@ def main():
     #局名リスト初期化
     read_stations("","",station_file)
 
+    #オーディオデバイスをセット
+    audio_dev_set(audio_list)
+
     # 音量初期値
     #vol_cmd = 'amixer %s sset PCM %d%%,%d%% unmute > /dev/null 2>&1' % (radio_volume_device, vol_val, vol_val)
     vol_target = volume_profile[vol_val]
-    vol_cmd = 'amixer %s sset %s %d%%,%d%% unmute > /dev/null 2>&1' % (radio_volume_device, radio_volume_ctl, vol_target, vol_target)
+    vol_cmd = 'amixer %s sset %s %d%%,%d%% unmute > /dev/null 2>&1' % (AUDIODEV.VOLDEV, AUDIODEV.VCONT, vol_target, vol_target)
     os.system(vol_cmd)
     disp_update()
 
     try:
         while(True):
+            # 再生/停止指定があった場合は実行
+            if g_ps_pressed == 1:
+                pbs_control_sub()
+                g_ps_pressed = 0
             disp_datetime()
             time.sleep(1)
             # 選局操作を行った後実行していない場合のタイムアウト判定
@@ -722,16 +847,17 @@ def play_radiko(station, r_user="", r_pass=""):
     ret = radiko.get_radiko_info(station,r_user,r_pass)
     if ret != False:
         (authtoken, streamurl) = ret
-        radiko_cmd = "ffplay {2} -headers \"X-RADIKO-AUTHTOKEN: {0}\" -i {1} >/dev/null 2>&1 &".format(authtoken, streamurl, FFPLAY_OPTIONS)
+        radiko_cmd = "ffplay {2} -headers \"X-RADIKO-AUTHTOKEN: {0}\" -i {1} > /dev/null 2>&1 &".format(authtoken, streamurl, FFPLAY_OPTIONS)
         #print(radiko_cmd)
         try:
-            radio_audio_driver
-            os.putenv('SDL_AUDIODRIVER', radio_audio_driver)
+            AUDIODEV.DRIVER
+            os.putenv('SDL_AUDIODRIVER', AUDIODEV.DRIVER)
         except:
             pass
         try:
-            radio_audio_device
-            os.putenv('AUDIODEV', radio_audio_device)
+            AUDIODEV.OUTDEV
+            #print(AUDIODEV.OUTDEV)
+            os.putenv('AUDIODEV', AUDIODEV.OUTDEV)
         except:
             pass
         os.system(radiko_cmd)
@@ -744,13 +870,13 @@ def play_radiru(station):
     radiru_cmd = 'ffplay -vn -infbuf -nodisp -loglevel quiet -i %s > /dev/null 2>&1 &' % station
     #print(radiru_cmd)
     try:
-        radio_audio_driver
-        os.putenv('SDL_AUDIODRIVER', radio_audio_driver)
+        AUDIODEV.DRIVER
+        os.putenv('SDL_AUDIODRIVER', AUDIODEV.DRIVER)
     except:
         pass
     try:
-        radio_audio_device
-        os.putenv('AUDIODEV', radio_audio_device)
+        AUDIODEV.OUTDEV
+        os.putenv('AUDIODEV', AUDIODEV.OUTDEV)
     except:
         pass
     os.system(radiru_cmd)
