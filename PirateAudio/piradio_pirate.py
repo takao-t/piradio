@@ -414,6 +414,11 @@ def p_pbs_control():
         # メニューリロード処理
         if p_method == 'MENU':
             try:
+                stop_play_cmd
+                os.system(stop_play_cmd)
+            except:
+                pass
+            try:
                 station_id
                 p_last_selected = 0
                 p_selected  = 0
@@ -422,7 +427,6 @@ def p_pbs_control():
                 disp_update()
             except:
                 pass
-            p_selected = p_last_selected
         # オーディオデバイス切換
         if p_method == 'AUDIOSET':
             try:
@@ -586,6 +590,7 @@ def disp_update():
         sc_draw.rectangle((200,232,239,239),fill=(b_icon_color),outline=(b_dark) )
 
         st7789.display(sc_image)
+        time.sleep(0.1)
     except:
         pass
 
