@@ -41,3 +41,6 @@ class CTRL_SW:
 
 # 音量(初期値)
 vol_val = 8
+
+# EQでバスブーストする場合のサンプル
+#FFPLAY_OPTIONS = '-vn -af "firequalizer=gain_entry=\'entry(0,+8);entry(250,+6)\'" -infbuf -nodisp -loglevel quiet'

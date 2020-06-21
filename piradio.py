@@ -117,9 +117,10 @@ station_logo_path = 'stations/'
 os.putenv('SDL_FBDEV', '/dev/fb1')
 
 # ffplayのオプション
-FFPLAY_OPTIONS = '-vn -infbuf -nodisp -loglevel quiet'
-# EQでバスブーストする場合のサンプル
-#FFPLAY_OPTIONS = '-vn -af "firequalizer=gain_entry=\'entry(0,+8);entry(250,+6)\'" -infbuf -nodisp -loglevel quiet'
+try:
+    FFPLAY_OPTIONS
+except:
+    FFPLAY_OPTIONS = '-vn -infbuf -nodisp -loglevel quiet'
 
 # 画面背景色
 sc_bg_color = (0,128,128)
@@ -445,6 +446,11 @@ def p_pbs_control():
         # メニューリロード処理
         if p_method == 'MENU':
             try:
+                stop_play_cmd
+                os.system(stop_play_cmd)
+            except:
+                pass
+            try:
                 station_id
                 p_last_selected = 0
                 p_selected  = 0
@@ -453,7 +459,6 @@ def p_pbs_control():
                 disp_update()
             except:
                 pass
-            p_selected = p_last_selected
         # オーディオデバイス切換
         if p_method == 'AUDIOSET':
             try:
