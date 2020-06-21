@@ -13,7 +13,7 @@ radio_volume_device = '-c0'
 radio_volume_ctl = 'SoftMaster'
 #
 # APIのポート(APIを使用しない場合はコメントアウト)
-#piradio_api_port = 8899
+#radio_api_port = 8899
 
 # Radikoプレミアムでエリアフリーを使う場合には設定する
 radiko_user = ''

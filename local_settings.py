@@ -12,7 +12,7 @@ radio_volume_device = '-c1'
 # 音量調整コントローラ名
 radio_volume_ctl = 'PCM'
 # APIのポート(APIを使用しない場合はコメントアウト)
-piradio_api_port = 8899
+radio_api_port = 8899
 
 #日本語フォント
 jp_font = "mplus-1p-medium.ttf"
