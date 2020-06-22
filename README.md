@@ -83,9 +83,11 @@ piradio_ai_portでAPIが使用するポート番号を指定します。localhos
 待ち受けます。現在のところRadikoにしか対応していませんが、以下の2種類のメッセージ
 を送り付けるだけで再生と停止が行えます。
 
-START:RN1 - Radikoの識別子 RN1 を再生開始します
+START RN1 - Radikoの識別子 RN1 を再生開始します
 
-STOP:     - 現在の再生を停止します。
+STOP      - 現在の再生を停止します。
+
+APIの仕様を変えます。セパレータはスペースになります。色々と処理が面倒になるので。
 
 筐体データはここにあります
 https://www.thingiverse.com/thing:4417542
