@@ -258,15 +258,18 @@ class APIHandler(SocketServer.BaseRequestHandler):
 
         self.data = self.request.recv(256).strip()
 
-        cmd = self.data.split(b':',2)[0]
+        cmd = self.data.split(b' ',2)[0]
         cmd = cmd.decode('utf-8')
-        target = self.data.split(b':',2)[1]
-        target = target.decode('utf-8')
+        try:
+            target = self.data.split(b' ',2)[1]
+            target = target.decode('utf-8')
+        except:
+            target = ''
         print(cmd)
         print(target)
 
         if cmd == 'START':
-            #print('START commdan for %s' % target)
+            #print('START command for %s' % target)
             sl_len = len(station_lists)
             #print(sl_len)
             for tmp_pos in range(sl_len):
@@ -282,6 +285,13 @@ class APIHandler(SocketServer.BaseRequestHandler):
         if cmd == 'STOP':
             #print('STOP')
             api_p_stop()
+            self.request.sendall("OK\n".encode('utf-8'))
+            return(True)
+        if cmd == 'NEWLIST':
+            print('NEWLIST')
+            #print('NEWLIST command for %s' % target)
+            api_p_stop()
+            api_p_listupdate(target)
             self.request.sendall("OK\n".encode('utf-8'))
             return(True)
 
@@ -307,7 +317,11 @@ def api_p_start():
     global p_last_selected
     global stop_play_cmd
     # 再生開始のWAITの表示
-    popup_text('WAIT',(255,174,0))
+    try:
+        use_gui
+        popup_text('WAIT',(255,174,0))
+    except:
+        pass
     # 再生を強制停止
     os.system(stop_play_cmd)
     time.sleep(0.5)
@@ -333,12 +347,32 @@ def api_p_start():
 def api_p_stop():
     global stop_play_cmd
     # 再生ストップの表示
-    popup_text('STOP',(255,0,0))
+    try:
+        use_gui
+        popup_text('STOP',(255,0,0))
+    except:
+        pass
     # 再生を停止
     os.system(stop_play_cmd)
     time.sleep(0.5)
     disp_update()
     print("API-STOP")
+
+# APIからの局リスト更新
+def api_p_listupdate(filename):
+    global p_selected
+    global p_last_selected
+
+    p_selected = 0
+    p_last_selected =0
+
+    read_stations("","",filename)
+
+    try:
+        use_gui
+        disp_update()
+    except:
+        pass
 
 
 # シグナルハンドラ(終了処理)
