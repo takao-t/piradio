@@ -1,6 +1,6 @@
 <?php
 
-$cmd = "START:" . "RN2" . "\r\n";
+$cmd = "START " . "RN2" . "\r\n";
 
 $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
 socket_connect($socket, "localhost", 8899);
