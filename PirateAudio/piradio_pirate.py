@@ -311,6 +311,10 @@ def api_p_start():
     # 再生方法がらじる
     if p_method == 'radiru':
         play_radiru(station_id)
+    # 再生方法がSDR
+    if p_method == 'sdr_radio':
+        stop_play_cmd = 'killall aplay'
+        play_sdr_radio(station_id)
     #
     p_last_selected = p_selected
     p_nexec_count = 0
@@ -421,6 +425,12 @@ def pbs_control_sub():
             play_radiru(station_id)
             # WAIT表示のままちょいまち
             time.sleep(1)
+        # 再生方法がSDR
+        if p_method == 'sdr_radio':
+            stop_play_cmd = 'killall aplay'
+            play_sdr_radio(station_id)
+            # WAIT表示のままちょいまち
+            time.sleep(1)
         p_last_selected = p_selected
     disp_update()
 
@@ -440,7 +450,7 @@ def p_pbs_control():
 
     g_p_method = p_method
 
-    if p_method == 'radiko' or p_method == 'radiru':
+    if p_method == 'radiko' or p_method == 'radiru' or p_method == 'sdr_radio':
         g_ps_pressed = 1
         #pbs_control_sub()
     else:
@@ -552,6 +562,7 @@ def s_volume_up():
     vol_target = volume_profile[vol_val]
     vol_cmd = 'amixer %s sset %s %d%%,%d%% unmute > /dev/null 2>&1' % (AUDIODEV.VOLDEV, AUDIODEV.VCONT, vol_target, vol_target)
     os.system(vol_cmd)
+    time.sleep(0.2)
     disp_update()
 
 # 音量dn
@@ -565,6 +576,7 @@ def s_volume_dn():
     vol_target = volume_profile[vol_val]
     vol_cmd = 'amixer %s sset %s %d%%,%d%% unmute > /dev/null 2>&1' % (AUDIODEV.VOLDEV, AUDIODEV.VCONT, vol_target, vol_target)
     os.system(vol_cmd)
+    time.sleep(0.2)
     disp_update()
 
 
@@ -641,7 +653,8 @@ def disp_update():
         sc_draw.rectangle((200,232,239,239),fill=(b_icon_color),outline=(b_dark) )
 
         st7789.display(sc_image)
-        time.sleep(0.1)
+        time.sleep(0.2)
+        return()
     except:
         pass
 
@@ -855,6 +868,42 @@ def play_radiru(station):
     except:
         pass
     os.system(radiru_cmd)
+    return()
+
+# SDR
+def play_sdr_radio(station):
+
+    freq = station.split(b';')[0]
+    try:
+        demod = station.split(b';')[1]
+    except:
+        demod = 'AM'
+
+    option = ''
+    if demod == 'AM':
+        demod = 'am'
+    elif demod == 'NFM':
+        demod = 'fm'
+    elif demod == 'WFM':
+        demod = 'wbfm'
+        option = '-E demp'
+    elif demod == 'USB':
+        demod = 'usb'
+    elif demod == 'LSB':
+        demod = 'lsb'
+    else:
+        demod = 'am'
+
+    sdr_radio_cmd = 'rtl_fm -f %s -M %s %s -s 200000 -r 48000 - ' % (freq, demod, option)
+    try:
+        AUDIODEV.OUTDEV
+        sdr_play_cmd =  'aplay --device=%s -r 48000 -f S16_LE' % AUDIODEV.OUTDEV
+    except:
+        sdr_play_cmd =  'aplay -r 48000 -f S16_LE'
+    sdr_cmd = sdr_radio_cmd + ' 2> /dev/null |' + sdr_play_cmd + ' > /dev/null 2>&1 &'
+    #print(sdr_cmd)
+    time.sleep(1)
+    os.system(sdr_cmd)
     return()
 
 
