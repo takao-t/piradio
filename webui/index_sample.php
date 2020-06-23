@@ -13,8 +13,8 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
         if(isset($_POST['file_to_load'])){
             $file_to_load = $_POST['file_to_load'];
         }
-        $station=$_POST['function'];
-        if($station == "UPDATELIST"){
+        $function = $_POST['function'];
+        if($function == "UPDATELIST"){
             $new_stat_list = $_POST['newlist'];
             //print($new_stat_list);
             $file_to_load = $new_stat_list;
@@ -22,8 +22,21 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
             $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
             socket_connect($socket, "localhost", 8899);
             socket_write($socket, $cmd);
-        } else if($station != "STOPALL"){
+        } else if($function == "PLAY"){
+            $station = $_POST['station'];
             $cmd = "START " . $station . "\r\n";
+            $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+            socket_connect($socket, "localhost", 8899);
+            socket_write($socket, $cmd);
+        } else if($function == "VOLUP"){
+            $station = $_POST['station'];
+            $cmd = "VOLUP " . $station . "\r\n";
+            $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+            socket_connect($socket, "localhost", 8899);
+            socket_write($socket, $cmd);
+        } else if($function == "VOLDN"){
+            $station = $_POST['station'];
+            $cmd = "VOLDN " . $station . "\r\n";
             $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
             socket_connect($socket, "localhost", 8899);
             socket_write($socket, $cmd);
@@ -41,7 +54,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
 print "<table border=1 cellspacing=0 cellpadding=0>";
 
 if (!isset($file_to_load)){
-    // 初期(Webアクセス時)の局リスト
+    //トップになる局リストを設定する
     $file_to_load = 'stations/station_list';
 }
 $stations = file($file_to_load);
@@ -61,7 +74,8 @@ foreach($stations as $line){
         $out_html .= "</td>";
         $out_html .= "<td>";
         $out_html .= '<form action="" method="POST">';
-        $out_html .= '<input type="hidden" name="function" value="';
+        $out_html .= '<input type="hidden" name="function" value="PLAY">';
+        $out_html .= '<input type="hidden" name="station" value="';
         $out_html .= $s_line[0];
         $out_html .= '">';
         $out_html .= '<input type="hidden" name="file_to_load" value="';
@@ -109,6 +123,20 @@ echo <<<EOT
 <input type="submit" value="停止">
 </form>
 </td>
+</tr>
+<tr>
+<td>音量</td>
+<td>
+<form action="" method="POST">
+<input type="hidden" name="function" value="VOLUP">
+<input type="hidden" name="file_to_load" value="{$file_to_load}">
+<input type="submit" value="UP">
+</form>
+<form action="" method="POST">
+<input type="hidden" name="function" value="VOLDN">
+<input type="hidden" name="file_to_load" value="{$file_to_load}">
+<input type="submit" value="DN">
+</form>
 </tr>
 </table>
 

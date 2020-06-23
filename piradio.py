@@ -294,6 +294,14 @@ class APIHandler(SocketServer.BaseRequestHandler):
             api_p_listupdate(target)
             self.request.sendall("OK\n".encode('utf-8'))
             return(True)
+        if cmd == 'VOLUP':
+            s_volume_up()
+            self.request.sendall("OK\n".encode('utf-8'))
+            return(True)
+        if cmd == 'VOLDN':
+            s_volume_dn()
+            self.request.sendall("OK\n".encode('utf-8'))
+            return(True)
 
         self.request.sendall("ERR\n".encode('utf-8'))
         return(False)
@@ -368,11 +376,7 @@ def api_p_listupdate(filename):
 
     read_stations("","",filename)
 
-    try:
-        use_gui
-        disp_update()
-    except:
-        pass
+    disp_update()
 
 
 # シグナルハンドラ(終了処理)
@@ -568,37 +572,50 @@ def p_tunectl(pinnum):
     #print(p_selected)
     disp_update()
 
+# 音量up
+def s_volume_up():
+
+    global vol_val
+
+    vol_val += 1
+    if vol_val >= 31:
+        vol_val = 31
+    vol_target = volume_profile[vol_val]
+    vol_cmd = 'amixer %s sset %s %d%%,%d%% unmute > /dev/null 2>&1' % (AUDIODEV.VOLDEV, AUDIODEV.VCONT, vol_target, vol_target)
+    os.system(vol_cmd)
+    disp_update()
+
+# 音量dn
+def s_volume_dn():
+
+    global vol_val
+
+    vol_val -= 1
+    if vol_val <= 0:
+        vol_val = 0
+    vol_target = volume_profile[vol_val]
+    vol_cmd = 'amixer %s sset %s %d%%,%d%% unmute > /dev/null 2>&1' % (AUDIODEV.VOLDEV, AUDIODEV.VCONT, vol_target, vol_target)
+    os.system(vol_cmd)
+    disp_update()
+
+
 # 音量
 def p_volumectl(pinnum):
     #print(pinnum)
 
-    global vol_val
-
     try:
         CTRL_SW.VOLUME_UP
         if pinnum == CTRL_SW.VOLUME_UP:
-            vol_val += 1
-            if vol_val >= 31:
-                vol_val = 31 
-            vol_target = volume_profile[vol_val]
-            vol_cmd = 'amixer %s sset %s %d%%,%d%% unmute > /dev/null 2>&1' % (AUDIODEV.VOLDEV, AUDIODEV.VCONT, vol_target, vol_target)
-            os.system(vol_cmd)
+            s_volume_up()
     except:
         pass
     try:
         CTRL_SW.VOLUME_DOWN
         if pinnum == CTRL_SW.VOLUME_DOWN:
-            vol_val -= 1
-            if vol_val <= 0:
-                vol_val = 0
-            vol_target = volume_profile[vol_val]
-            vol_cmd = 'amixer %s sset %s %d%%,%d%% unmute > /dev/null 2>&1' % (AUDIODEV.VOLDEV, AUDIODEV.VCONT, vol_target, vol_target)
-            os.system(vol_cmd)
+            s_volume_dn()
     except:
         pass
 
-    disp_update()
-    #print(vol_target)
 
 # 画面表示更新
 def disp_update():
@@ -705,9 +722,10 @@ def audio_dev_set(list):
     #print(vol_val)
 
     #音量設定しなおし
-    vol_target = volume_profile[vol_val]
-    vol_cmd = 'amixer %s sset %s %d%%,%d%% unmute > /dev/null 2>&1' % (AUDIODEV.VOLDEV, AUDIODEV.VCONT, vol_target, vol_target)
-    os.system(vol_cmd)
+    # 音量初期値
+    # 初期値+1してdownで設定しなおす
+    vol_val += 1
+    s_volume_dn()
     disp_update()
 
 
@@ -787,6 +805,7 @@ def main():
     global p_selected
     global p_last_selected
     global g_ps_pressed
+    global vol_val
 
     # シグナル(HUP,INT,QUITで終了)
     signal.signal(signal.SIGHUP, signal_handler)
@@ -854,10 +873,9 @@ def main():
     audio_dev_set(audio_list)
 
     # 音量初期値
-    #vol_cmd = 'amixer %s sset PCM %d%%,%d%% unmute > /dev/null 2>&1' % (radio_volume_device, vol_val, vol_val)
-    vol_target = volume_profile[vol_val]
-    vol_cmd = 'amixer %s sset %s %d%%,%d%% unmute > /dev/null 2>&1' % (AUDIODEV.VOLDEV, AUDIODEV.VCONT, vol_target, vol_target)
-    os.system(vol_cmd)
+    # 初期値+1してdownで初期設定
+    vol_val += 1
+    s_volume_dn()
     disp_update()
 
     try:
