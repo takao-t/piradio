@@ -1,0 +1,8 @@
+# SDR
+80.0M;WFM,FM東京,FM TOKYO,SYS_SDR_FM.png,sdr_radio
+81.3M;WFM,J-WAVE,J-WAVE,SYS_SDR_FM.png,sdr_radio
+82.5M;WFM,NHK-FM,NHK-FM,SYS_SDR_FM.png,sdr_radio
+90.5M;WFM,TBSラジオ,TBS Radio,SYS_SDR_FM.png,sdr_radio
+91.6M;WFM,文化放送,TBS Radio,SYS_SDR_FM.png,sdr_radio
+93.0M;WFM,ニッポン放送,TBS Radio,SYS_SDR_FM.png,sdr_radio
+stations/japan_list,戻る,BACK,SYS_MENU.png,MENU

@@ -54,7 +54,6 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
 print "<table border=1 cellspacing=0 cellpadding=0>";
 
 if (!isset($file_to_load)){
-    //トップになる局リストを設定する
     $file_to_load = 'stations/station_list';
 }
 $stations = file($file_to_load);
@@ -62,7 +61,9 @@ $stations = file($file_to_load);
 
 foreach($stations as $line){
     $s_line = explode(',', $line);
-    if(strcmp(trim($s_line[4]), "radiko") == 0 || strcmp(trim($s_line[4]), "radiru") == 0){
+    if(strcmp(trim($s_line[4]), "radiko") == 0 
+        || strcmp(trim($s_line[4]), "radiru") == 0
+        || strcmp(trim($s_line[4]), "sdr_radio") == 0){
         $out_html = "<tr><td>";
         if($s_line[3] != ""){
             $out_html .= "<img src=stations/";

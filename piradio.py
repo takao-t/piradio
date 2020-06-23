@@ -343,6 +343,10 @@ def api_p_start():
     if p_method == 'radiru':
         stop_play_cmd = 'killall ffplay'
         play_radiru(station_id)
+    # 再生方法がSDR
+    if p_method == 'sdr_radio':
+        stop_play_cmd = 'killall aplay'
+        play_sdr_radio(station_id)
     #
     p_last_selected = p_selected
     p_nexec_count = 0
@@ -448,6 +452,12 @@ def pbs_control_sub():
             play_radiru(station_id)
             # WAIT表示のままちょいまち
             time.sleep(1)
+        # 再生方法がSDR
+        if p_method == 'sdr_radio':
+            stop_play_cmd = 'killall aplay'
+            play_sdr_radio(station_id)
+            # WAIT表示のままちょいまち
+            time.sleep(1)
         p_last_selected = p_selected
     disp_update()
 
@@ -468,7 +478,7 @@ def p_pbs_control():
 
     g_p_method = p_method
 
-    if p_method == 'radiko' or p_method == 'radiru':
+    if p_method == 'radiko' or p_method == 'radiru' or p_method == 'sdr_radio':
         g_ps_pressed = 1
         #pbs_control_sub()
     else:
@@ -937,6 +947,42 @@ def play_radiru(station):
     except:
         pass
     os.system(radiru_cmd)
+    return()
+
+# SDR
+def play_sdr_radio(station):
+
+    freq = station.split(b';')[0]
+    try:
+        demod = station.split(b';')[1]
+    except:
+        demod = 'AM'
+
+    option = ''
+    if demod == 'AM':
+        demod = 'am'
+    elif demod == 'NFM':
+        demod = 'fm'
+    elif demod == 'WFM':
+        demod = 'wbfm'
+        option = '-E demp'
+    elif demod == 'USB':
+        demod = 'usb'
+    elif demod == 'LSB':
+        demod = 'lsb'
+    else:
+        demod = 'am'
+
+    sdr_radio_cmd = 'rtl_fm -f %s -M %s %s -s 200000 -r 48000 - ' % (freq, demod, option)
+    try:
+        AUDIODEV.OUTDEV
+        sdr_play_cmd =  'aplay --device=%s -r 48000 -f S16_LE' % AUDIODEV.OUTDEV
+    except:
+        sdr_play_cmd =  'aplay -r 48000 -f S16_LE'
+    sdr_cmd = sdr_radio_cmd + ' 2> /dev/null |' + sdr_play_cmd + ' > /dev/null 2>&1 &'
+    #print(sdr_cmd)
+    time.sleep(1)
+    os.system(sdr_cmd)
     return()
 
 
