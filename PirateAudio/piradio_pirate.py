@@ -134,6 +134,9 @@ text_offset_x = 100
 text_offset_y = 4
 #text_offset_y = 0
 
+# 画面クラッシュ回避のロック用
+disp_lock = 0
+
 # SPI LCD
 SPI_SPEED_MHZ = 80
 
@@ -606,6 +609,12 @@ def disp_update():
     global p_selected
     global sc_draw
     global sc_image
+    global disp_lock
+
+    if disp_lock == 1:
+        return()
+
+    disp_lock = 1
 
     try:
         use_gui
@@ -654,8 +663,10 @@ def disp_update():
 
         st7789.display(sc_image)
         time.sleep(0.2)
+        disp_lock = 0
         return()
     except:
+        disp_lock = 0
         pass
 
 # 画面上ポップアップテキスト
