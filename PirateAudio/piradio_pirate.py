@@ -306,7 +306,6 @@ def api_p_start():
     # 再生開始のWAITの表示
     try:
         use_gui
-        popup_text('WAIT',(255,174,0))
     except:
         pass
     # 再生を強制停止
@@ -331,8 +330,7 @@ def api_p_start():
     #
     p_last_selected = p_selected
     p_nexec_count = 0
-    # WAIT表示のままちょいまち
-    time.sleep(3)
+
     disp_update()
     print("API-PLAY : %s" % station_id)
 
@@ -342,7 +340,6 @@ def api_p_stop():
     # 再生ストップの表示
     try:
         use_gui
-        popup_text('STOP',(255,0,0))
     except:
         pass
     # 再生を停止
@@ -404,8 +401,6 @@ def pbs_control_sub():
     try:
         stop_arg = stop_play_cmd.split(' ')
         res = subprocess.check_output(["pgrep",stop_arg[1]])
-        # 再生ストップスタートのWAIT表示
-        popup_text('STOP',(255,0,0))
         # 再生を停止
         os.system(stop_play_cmd)
         time.sleep(1)
@@ -424,7 +419,6 @@ def pbs_control_sub():
 
         # 再生ストップスタートのWAIT表示
         disp_update()
-        popup_text('WAIT',(0,255,0))
 
         station_num = p_selected
         (station_id, dummy1, dummy2, dummy3, p_method) = station_lists[station_num]
@@ -435,20 +429,14 @@ def pbs_control_sub():
         if p_method == 'radiko':
             stop_play_cmd = 'killall ffplay'
             play_radiko(station_id,radiko_user,radiko_pass)
-            # WAIT表示のままちょいまち
-            time.sleep(1)
         # 再生方法がらじる
         if p_method == 'radiru':
             stop_play_cmd = 'killall ffplay'
             play_radiru(station_id)
-            # WAIT表示のままちょいまち
-            time.sleep(1)
         # 再生方法がSDR
         if p_method == 'sdr_radio':
             stop_play_cmd = 'killall aplay'
             play_sdr_radio(station_id)
-            # WAIT表示のままちょいまち
-            time.sleep(1)
         p_last_selected = p_selected
     disp_update()
 
@@ -493,7 +481,6 @@ def p_pbs_control():
                 p_last_selected = 0
                 p_selected  = 0
                 read_stations("","",station_id)
-                time.sleep(1)
                 disp_update()
             except:
                 pass
@@ -507,8 +494,6 @@ def p_pbs_control():
             try:
                 station_id
                 audio_dev_set(station_id)
-                popup_text('OK',(255,0,0))
-                time.sleep(1)
             except:
                 pass
 
@@ -677,17 +662,6 @@ def disp_update():
             disp_lock = 0
 
         return()
-    except:
-        pass
-
-# 画面上ポップアップテキスト
-def popup_text(text,color):
-    global sc_image
-    global sc_draw
-    try:
-        use_gui
-        sc_draw.text((70,70),text,color,font=font3)
-        st7789.display(sc_image)
     except:
         pass
 
