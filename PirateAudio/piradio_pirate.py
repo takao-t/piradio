@@ -198,6 +198,9 @@ class AUDIODEV:
 # GPIOの問題避け
 prev_pushed_time = 0
 
+# 停止コマンド
+stop_play_cmd = 'killall ffplay; killall aplay'
+
 # 局名リスト
 station_lists = []
 #局数
@@ -297,6 +300,9 @@ except:
 def api_p_start():
     global p_selected
     global p_last_selected
+    global b_icon_color
+    global stop_play_cmd
+
     # 再生開始のWAITの表示
     try:
         use_gui
@@ -304,20 +310,24 @@ def api_p_start():
     except:
         pass
     # 再生を強制停止
-    os.system('killall ffplay')
+    os.system(stop_play_cmd)
+    b_icon_color = b_dark
     time.sleep(0.5)
     station_num = p_selected
     (station_id, dummy1, dummy2, dummy3, p_method) = station_lists[station_num]
     # 再生方法がRadiko
     if p_method == 'radiko':
         play_radiko(station_id,radiko_user,radiko_pass)
+        b_icon_color = b_busy
     # 再生方法がらじる
     if p_method == 'radiru':
         play_radiru(station_id)
+        b_icon_color = b_busy
     # 再生方法がSDR
     if p_method == 'sdr_radio':
         stop_play_cmd = 'killall aplay'
         play_sdr_radio(station_id)
+        b_icon_color = b_busy
     #
     p_last_selected = p_selected
     p_nexec_count = 0
@@ -328,6 +338,7 @@ def api_p_start():
 
 # APIからの停止処理
 def api_p_stop():
+    global stop_play_cmd
     # 再生ストップの表示
     try:
         use_gui
@@ -335,7 +346,11 @@ def api_p_stop():
     except:
         pass
     # 再生を停止
-    os.system('killall ffplay')
+    try:
+        stop_play_cmd
+        os.system(stop_play_cmd)
+    except:
+        os.system('killall ffplay;killall aplay')
     time.sleep(0.5)
     disp_update()
     print("API-STOP")
@@ -364,7 +379,7 @@ def signal_handler(signal,stack):
         api_server.shutdown()
     except:
         pass
-    os.system('killall ffplay')
+    os.system(stop_play_cmd)
     time.sleep(1)
     try:
         use_gui
@@ -611,11 +626,6 @@ def disp_update():
     global sc_image
     global disp_lock
 
-    if disp_lock == 1:
-        return()
-
-    disp_lock = 1
-
     try:
         use_gui
         #print(p_selected)
@@ -661,12 +671,13 @@ def disp_update():
         #
         sc_draw.rectangle((200,232,239,239),fill=(b_icon_color),outline=(b_dark) )
 
-        st7789.display(sc_image)
-        time.sleep(0.2)
-        disp_lock = 0
+        if disp_lock == 0:
+            disp_lock = 1
+            st7789.display(sc_image)
+            disp_lock = 0
+
         return()
     except:
-        disp_lock = 0
         pass
 
 # 画面上ポップアップテキスト
