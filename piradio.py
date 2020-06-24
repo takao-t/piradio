@@ -107,8 +107,8 @@ except:
     vol_val = 10
 
 # 局設定リストのファイル
-#station_file = 'stations/station_list'
-station_file = 'stations/japan_list'
+station_file = 'stations/station_list'
+#station_file = 'stations/japan_list'
 # ロゴファイルのパス
 station_logo_path = 'stations/'
 
