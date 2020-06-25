@@ -1,8 +1,13 @@
-# SDR
+# SDR FM 東京
+78.0M;WFM,ベイFM,BAY FM,SYS_SDR_FM.png,sdr_radio
+79.5M;WFM,NACK5,NACK5,SYS_SDR_FM.png,sdr_radio
 80.0M;WFM,FM東京,FM TOKYO,SYS_SDR_FM.png,sdr_radio
 81.3M;WFM,J-WAVE,J-WAVE,SYS_SDR_FM.png,sdr_radio
 82.5M;WFM,NHK-FM,NHK-FM,SYS_SDR_FM.png,sdr_radio
+84.7M;WFM,FMヨコハマ,FM YOKOHAMA,SYS_SDR_FM.png,sdr_radio
+89.7M;WFM,Inter FM,Inter FM,SYS_SDR_FM.png,sdr_radio
 90.5M;WFM,TBSラジオ,TBS Radio,SYS_SDR_FM.png,sdr_radio
 91.6M;WFM,文化放送,TBS Radio,SYS_SDR_FM.png,sdr_radio
 93.0M;WFM,ニッポン放送,TBS Radio,SYS_SDR_FM.png,sdr_radio
+92.4M;WFM,ラジオ日本,Radio Nippon,SYS_SDR_FM.png,sdr_radio
 stations/station_list,戻る,BACK,SYS_MENU.png,MENU
