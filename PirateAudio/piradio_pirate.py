@@ -203,6 +203,8 @@ stop_play_cmd = 'killall ffplay; killall aplay'
 
 # 局名リスト
 station_lists = []
+# ロゴファイルロード用
+station_logos = []
 #局数
 num_stations = 0
 
@@ -638,15 +640,9 @@ def disp_update():
             #ページ内の表示局数が下までない場合にはテキストを書かない(書けない)
             if (b_pos+dsp_page) < ta_len:
                 (dummy1,station_name,dummy2,logo_file,dummy4) = station_lists[b_pos+dsp_page]
-                l_full_path = "%s%s" % (station_logo_path, logo_file)
                 sc_draw.text((text_org_x,disp_y_next+text_org_y),station_name,st_text_color,font=font1)
-                if logo_file != "":
-                    try:
-                        st_logo = Image.open(l_full_path)
-                        st_logo = st_logo.crop(logo_crop_size)
-                        sc_image.paste(st_logo,(0,disp_y_next+logo_offset_y),st_logo)
-                    except:
-                        pass
+                # ロゴファイルは事前ロードしたものを使う
+                sc_image.paste(station_logos[b_pos+dsp_page],(0,disp_y_next+logo_offset_y),station_logos[b_pos+dsp_page])
             disp_y_next += (station_disp_y + 2)
             b_count += 1
 
@@ -698,9 +694,11 @@ def audio_dev_set(list):
 def read_stations(signal="",frame="",filename=""):
 
     global station_lists
+    global station_logos
     global num_stations
     global p_selected
     global p_last_selected
+    global sc_draw
 
     #
     try:
@@ -720,6 +718,7 @@ def read_stations(signal="",frame="",filename=""):
         #with open(load_fn, 'r', encoding='utf-8') as f:
             num_stations = 0
             station_lists = []
+            station_logos = []
             s_line = f.readline()
             while s_line:
                 if not s_line.startswith('#'):
@@ -730,6 +729,16 @@ def read_stations(signal="",frame="",filename=""):
                     p_method = s_line.split(',',5)[4]
                     p_method = p_method.strip()
                     #print("%s : %s : %s : %s : %s" % (station_id, station_name, station_aname, station_logo,p_method))
+                    if station_logo != "":
+                        # ロゴファイルの事前ロード
+                        l_full_path = "%s%s" % (station_logo_path, station_logo)
+                        try:
+                            st_logo_buf = Image.open(l_full_path)
+                            st_logo_buf = st_logo_buf.crop(logo_crop_size)
+                            station_logos.append(st_logo_buf)
+                        except:
+                            pass
+
                     station_lists.append( [station_id,station_name,station_aname,station_logo,p_method] )
                 s_line = f.readline()
 
