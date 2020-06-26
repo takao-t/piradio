@@ -127,6 +127,12 @@ try:
 except:
     FFPLAY_OPTIONS = '-vn -infbuf -nodisp -loglevel quiet'
 
+# バックライト消灯までの時間
+try:
+    BL_TIMEOUT = local_settings.BL_TIMEOUT
+except:
+    BL_TIMEOUT = 30
+
 # 画面背景色
 sc_bg_color = (0,128,128)
 # 選択項目表示色
@@ -192,6 +198,10 @@ class AUDIODEV:
 
 # GPIOの問題避け
 prev_pushed_time = 0
+
+# キー操作フラグ
+key_pressed = 0
+key_timeout = 0
 
 # 再生停止コマンド
 stop_play_cmd = 'killall ffplay'
@@ -538,6 +548,7 @@ def p_startstop(pinnum):
     global p_nexec_count
     global p_nexec_timeout
     global stop_play_cmd
+    global key_pressed
 
 
     # GPIO割込みが2重検出される問題避け
@@ -555,6 +566,7 @@ def p_startstop(pinnum):
 
     #元画面再表示
     disp_update()
+    key_pressed = 1
 
 
 # 選局
@@ -563,6 +575,7 @@ def p_tunectl(pinnum):
 
     global p_selected
     global p_nexec_count
+    global key_pressed
 
     try:
         CTRL_SW.TUNE_UP
@@ -586,6 +599,7 @@ def p_tunectl(pinnum):
 
     #print(p_selected)
     disp_update()
+    key_pressed = 1
 
 # 音量up
 def s_volume_up():
@@ -616,6 +630,8 @@ def s_volume_dn():
 
 # 音量
 def p_volumectl(pinnum):
+
+    global key_pressed
     #print(pinnum)
 
     try:
@@ -630,6 +646,8 @@ def p_volumectl(pinnum):
             s_volume_dn()
     except:
         pass
+
+    key_pressed = 1
 
 
 # 画面表示更新
@@ -821,6 +839,8 @@ def main():
     global p_last_selected
     global g_ps_pressed
     global vol_val
+    global key_pressed
+    global key_timeout
 
     # シグナル(HUP,INT,QUITで終了)
     signal.signal(signal.SIGHUP, signal_handler)
@@ -900,7 +920,6 @@ def main():
                 pbs_control_sub()
                 g_ps_pressed = 0
             disp_datetime()
-            time.sleep(1)
             # 選局操作を行った後実行していない場合のタイムアウト判定
             if p_nexec_count != 0:
                 p_nexec_count -= 1
@@ -908,6 +927,21 @@ def main():
                     # タイムアウトしたら選択局を前に戻す
                     p_selected = p_last_selected
                     disp_update()
+            try:
+                BACKLIGHT
+                # 操作タイムアウトでバックライト消灯
+                key_timeout += 1
+                if BL_TIMEOUT != 0:
+                    if key_timeout > BL_TIMEOUT:
+                        GPIO.output(BACKLIGHT,GPIO.LOW)
+                    if key_pressed == 1:
+                        key_timeout = 0
+                        key_pressed = 0
+                        GPIO.output(BACKLIGHT,GPIO.HIGH)
+            except:
+                pass
+            # ループサイクルは1秒
+            time.sleep(1)
 
     except KeyboardInterrupt:
         pass
