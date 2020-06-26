@@ -107,10 +107,15 @@ except:
     vol_val = 10
 
 # 局設定リストのファイル
-station_file = 'stations/station_list'
-#station_file = 'stations/japan_list'
+try:
+    station_file = local_settings.station_file
+except:
+    station_file = 'stations/station_list'
 # ロゴファイルのパス
-station_logo_path = 'stations/'
+try:
+    station_logo_path = local_settings.station_logo_path
+except:
+    station_logo_path = 'stations/'
 
 # 320x240のディスプレイを使用
 # pygameで使用するフレームバッファだけあればOK

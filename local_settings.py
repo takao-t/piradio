@@ -21,6 +21,11 @@ jp_font = "mplus-1p-medium.ttf"
 radiko_user = ''
 radiko_pass = ''
 
+# 局リストとロゴファイルの位置
+# デフォルトは stations/station_list と stations/
+# station_file = 'stations/station_list'
+# station_logo_path = 'stations/'
+
 # 制御用スイッチ:GPIO番号(BCM)
 # 注: 使用しないスイッチはコメントアウトして変数をセットしない
 #     例えばTUNE_DOWNを指定しなければ合計4ボタンで実装できる
