@@ -946,8 +946,8 @@ def play_radiru(station):
 #ストリーム再生(URL指定)
 def play_stream(s_url):
     if s_url != '':
-        #stream_cmd = "ffplay {1} -i {0} > /dev/null 2>&1 &".format(s_url, FFPLAY_OPTIONS)
-        print(stream_cmd)
+        stream_cmd = "ffplay {1} -i {0} > /dev/null 2>&1 &".format(s_url, FFPLAY_OPTIONS)
+        #print(stream_cmd)
         try:
             AUDIODEV.DRIVER
             os.putenv('SDL_AUDIODRIVER', AUDIODEV.DRIVER)
