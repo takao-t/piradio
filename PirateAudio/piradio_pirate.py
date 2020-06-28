@@ -100,10 +100,17 @@ except:
     vol_val = 10
 
 # 局設定リストのファイル
-#station_file = 'stations/station_list'
-station_file = 'stations/bbc_list'
+try:
+    station_file = local_settings.station_file
+except:
+    station_file = 'stations/station_list'
 # ロゴファイルのパス
-station_logo_path = 'stations/'
+try:
+    station_logo_path = local_settings.station_logo_path
+except:
+    station_logo_path = 'stations/'
+
+
 # ロゴのクロップサイズ
 logo_crop_size = (5,0,110,33)
 # ロゴ縦位置
