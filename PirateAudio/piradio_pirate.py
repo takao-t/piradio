@@ -449,9 +449,6 @@ def pbs_control_sub():
 
         b_icon_color = b_busy
 
-        # 再生ストップスタートのWAIT表示
-        disp_update()
-
         station_num = p_selected
         (station_id, dummy1, dummy2, dummy3, p_method) = station_lists[station_num]
         #print(station_id)
