@@ -1,4 +1,4 @@
-Raspberry Piをradikoラジオにする(らじるも使える)
+Raspberry Piをラジオにする(Radiko,らじるらじる,SDR 対応)
 
 ![sample](https://user-images.githubusercontent.com/49352933/82976092-272b5800-a019-11ea-9ec7-32c22b80a651.jpg)
 ![pirate](https://user-images.githubusercontent.com/49352933/83227689-bf634180-a1bf-11ea-97cb-83e33b1f1227.jpg)
