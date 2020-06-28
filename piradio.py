@@ -31,6 +31,8 @@ import xml.etree.ElementTree as ET
 import codecs
 # Radiko処理用
 import radiko
+# らじる処理用
+import radiru
 
 
 # 引数処理
@@ -358,6 +360,10 @@ def api_p_start():
     if p_method == 'radiru':
         stop_play_cmd = 'killall ffplay'
         play_radiru(station_id)
+    # 再生方法がストリーム
+    if p_method == 'stream':
+        stop_play_cmd = 'killall ffplay'
+        play_stream(station_id)
     # 再生方法がSDR
     if p_method == 'sdr_radio':
         stop_play_cmd = 'killall aplay'
@@ -467,6 +473,12 @@ def pbs_control_sub():
             play_radiru(station_id)
             # WAIT表示のままちょいまち
             time.sleep(1)
+        # 再生方法がストリーム
+        if p_method == 'stream':
+            stop_play_cmd = 'killall ffplay'
+            play_stream(station_id)
+            # WAIT表示のままちょいまち
+            time.sleep(1)
         # 再生方法がSDR
         if p_method == 'sdr_radio':
             stop_play_cmd = 'killall aplay'
@@ -493,7 +505,7 @@ def p_pbs_control():
 
     g_p_method = p_method
 
-    if p_method == 'radiko' or p_method == 'radiru' or p_method == 'sdr_radio':
+    if p_method == 'radiko' or p_method == 'radiru' or p_method == 'sdr_radio' or p_method == 'stream':
         g_ps_pressed = 1
         #pbs_control_sub()
     else:
@@ -973,19 +985,39 @@ def play_radiko(station, r_user="", r_pass=""):
 
 #らじる再生
 def play_radiru(station):
-    radiru_cmd = 'ffplay -vn -infbuf -nodisp -loglevel quiet -i %s > /dev/null 2>&1 &' % station
-    #print(radiru_cmd)
-    try:
-        AUDIODEV.DRIVER
-        os.putenv('SDL_AUDIODRIVER', AUDIODEV.DRIVER)
-    except:
-        pass
-    try:
-        AUDIODEV.OUTDEV
-        os.putenv('AUDIODEV', AUDIODEV.OUTDEV)
-    except:
-        pass
-    os.system(radiru_cmd)
+    ret = radiru.radiru_url(station)
+    if ret != False:
+        radiru_cmd = "ffplay {1} -i {0} > /dev/null 2>&1 &".format(ret, FFPLAY_OPTIONS)
+        #print(radiru_cmd)
+        try:
+            AUDIODEV.DRIVER
+            os.putenv('SDL_AUDIODRIVER', AUDIODEV.DRIVER)
+        except:
+            pass
+        try:
+            AUDIODEV.OUTDEV
+            os.putenv('AUDIODEV', AUDIODEV.OUTDEV)
+        except:
+            pass
+        os.system(radiru_cmd)
+    return()
+
+#ストリーム再生(URL指定)
+def play_stream(s_url):
+    if s_url != '':
+        stream_cmd = "ffplay {1} -i {0} > /dev/null 2>&1 &".format(s_url, FFPLAY_OPTIONS)
+        #print(stream_cmd)
+        try:
+            AUDIODEV.DRIVER
+            os.putenv('SDL_AUDIODRIVER', AUDIODEV.DRIVER)
+        except:
+            pass
+        try:
+            AUDIODEV.OUTDEV
+            os.putenv('AUDIODEV', AUDIODEV.OUTDEV)
+        except:
+            pass
+        os.system(stream_cmd)
     return()
 
 # SDR
