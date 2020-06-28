@@ -1047,6 +1047,11 @@ def play_sdr_radio(station):
     sdr_radio_cmd = 'rtl_fm -f %s -M %s %s -s 200000 -r 44100 - ' % (freq, demod, option)
     sdr_play_cmd = 'ffplay -f s16le -ar 44100 -i -'
     try:
+        AUDIODEV.DRIVER
+        os.putenv('SDL_AUDIODRIVER', AUDIODEV.DRIVER)
+    except:
+        pass
+    try:
         AUDIODEV.OUTDEV
         os.putenv('AUDIODEV', AUDIODEV.OUTDEV)
     except:

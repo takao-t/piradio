@@ -993,6 +993,11 @@ def play_sdr_radio(station):
     sdr_play_cmd = 'ffplay -f s16le -ar 44100 -i -'
     sdr_cmd = sdr_radio_cmd + ' 2> /dev/null |' + sdr_play_cmd + ' > /dev/null 2>&1 &'
     try:
+        AUDIODEV.DRIVER
+        os.putenv('SDL_AUDIODRIVER', AUDIODEV.DRIVER)
+    except:
+        pass
+    try:
         AUDIODEV.OUTDEV
         os.putenv('AUDIODEV', AUDIODEV.OUTDEV)
     except:
