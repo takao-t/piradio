@@ -356,7 +356,7 @@ def api_p_start():
         b_icon_color = b_busy
     # 再生方法がSDR
     if p_method == 'sdr_radio':
-        stop_play_cmd = 'killall aplay'
+        stop_play_cmd = 'killall ffplay'
         play_sdr_radio(station_id)
         b_icon_color = b_busy
     #
@@ -468,7 +468,7 @@ def pbs_control_sub():
             play_stream(station_id)
         # 再生方法がSDR
         if p_method == 'sdr_radio':
-            stop_play_cmd = 'killall aplay'
+            stop_play_cmd = 'killall ffplay'
             play_sdr_radio(station_id)
         p_last_selected = p_selected
     disp_update()
@@ -989,13 +989,14 @@ def play_sdr_radio(station):
     else:
         demod = 'am'
 
-    sdr_radio_cmd = 'rtl_fm -f %s -M %s %s -s 200000 -r 48000 - ' % (freq, demod, option)
+    sdr_radio_cmd = 'rtl_fm -f %s -M %s %s -s 200000 -r 44100 - ' % (freq, demod, option)
+    sdr_play_cmd = 'ffplay -f s16le -ar 44100 -i -'
+    sdr_cmd = sdr_radio_cmd + ' 2> /dev/null |' + sdr_play_cmd + ' > /dev/null 2>&1 &'
     try:
         AUDIODEV.OUTDEV
-        sdr_play_cmd =  'aplay --device=%s -r 48000 -f S16_LE' % AUDIODEV.OUTDEV
+        os.putenv('AUDIODEV', AUDIODEV.OUTDEV)
     except:
-        sdr_play_cmd =  'aplay -r 48000 -f S16_LE'
-    sdr_cmd = sdr_radio_cmd + ' 2> /dev/null |' + sdr_play_cmd + ' > /dev/null 2>&1 &'
+        pass
     #print(sdr_cmd)
     time.sleep(1)
     os.system(sdr_cmd)
