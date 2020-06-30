@@ -33,6 +33,8 @@ import codecs
 import radiko
 # らじる処理用
 import radiru
+# サイマルラジオ処理用
+import simulradio
 
 
 # 引数処理
@@ -360,6 +362,14 @@ def api_p_start():
     if p_method == 'radiru':
         stop_play_cmd = 'killall ffplay'
         play_radiru(station_id)
+    # 再生方法がASX再生
+    if p_method == 'play_asx':
+        stop_play_cmd = 'killall mplayer'
+        play_asx(station_id)
+    # 再生方法がサイマルラジオ
+    if p_method == 'simulradio':
+        stop_play_cmd = 'killall mplayer'
+        play_simulradio(station_id)
     # 再生方法がストリーム
     if p_method == 'stream':
         stop_play_cmd = 'killall ffplay'
@@ -473,6 +483,18 @@ def pbs_control_sub():
             play_radiru(station_id)
             # WAIT表示のままちょいまち
             time.sleep(1)
+        # 再生方法がASX再生
+        if p_method == 'play_asx':
+            stop_play_cmd = 'killall mplayer'
+            play_asx(station_id)
+            # WAIT表示のままちょいまち
+            time.sleep(1)
+        # 再生方法がサイマルラジオ
+        if p_method == 'simulradio':
+            stop_play_cmd = 'killall mplayer'
+            play_simulradio(station_id)
+            # WAIT表示のままちょいまち
+            time.sleep(1)
         # 再生方法がストリーム
         if p_method == 'stream':
             stop_play_cmd = 'killall ffplay'
@@ -505,7 +527,9 @@ def p_pbs_control():
 
     g_p_method = p_method
 
-    if p_method == 'radiko' or p_method == 'radiru' or p_method == 'sdr_radio' or p_method == 'stream':
+    if p_method == 'radiko' or p_method == 'radiru' \
+                    or p_method == 'sdr_radio' or p_method == 'stream' \
+                    or p_method == 'play_asx' or p_method == 'simulradio':
         g_ps_pressed = 1
         #pbs_control_sub()
     else:
@@ -1002,6 +1026,41 @@ def play_radiru(station):
         os.system(radiru_cmd)
     return()
 
+#サイマルラジオ対応
+def play_simulradio(station):
+    if station != '':
+        target = simulradio.get_simulradio_url(station)
+        #print(target)
+        try:
+            AUDIODEV.DRIVER
+            AUDIODEV.OUTDEV
+            tmp_dev = AUDIODEV.OUTDEV.replace(':','=')
+            asx_cmd = "mplayer -novideo -ao %s:device=%s %s > /dev/null 2>&1 &" % (AUDIODEV.DRIVER, tmp_dev, target)
+        except:
+            asx_cmd = "mplayer -novideo %s > /dev/null 2>&1 &" % target
+
+        #print(asx_cmd)
+        os.system(asx_cmd)
+    return
+
+
+#ASX対応
+def play_asx(station):
+    if station != '':
+        target = simulradio.asx_to_target(station)
+        #print(target)
+        try:
+            AUDIODEV.DRIVER
+            AUDIODEV.OUTDEV
+            tmp_dev = AUDIODEV.OUTDEV.replace(':','=')
+            asx_cmd = "mplayer -novideo -ao %s:device=%s %s > /dev/null 2>&1 &" % (AUDIODEV.DRIVER, tmp_dev, target)
+        except:
+            asx_cmd = "mplayer -novideo %s > /dev/null 2>&1 &" % target
+
+        #print(asx_cmd)
+        os.system(asx_cmd)
+    return
+
 #ストリーム再生(URL指定)
 def play_stream(s_url):
     if s_url != '':
@@ -1046,11 +1105,6 @@ def play_sdr_radio(station):
 
     sdr_radio_cmd = 'rtl_fm -f %s -M %s %s -s 200000 -r 44100 - ' % (freq, demod, option)
     sdr_play_cmd = 'ffplay -f s16le -ar 44100 -i -'
-    try:
-        AUDIODEV.DRIVER
-        os.putenv('SDL_AUDIODRIVER', AUDIODEV.DRIVER)
-    except:
-        pass
     try:
         AUDIODEV.OUTDEV
         os.putenv('AUDIODEV', AUDIODEV.OUTDEV)
