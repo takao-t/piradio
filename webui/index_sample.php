@@ -63,6 +63,9 @@ foreach($stations as $line){
     $s_line = explode(',', $line);
     if(strcmp(trim($s_line[4]), "radiko") == 0 
         || strcmp(trim($s_line[4]), "radiru") == 0
+        || strcmp(trim($s_line[4]), "simulradio") == 0
+        || strcmp(trim($s_line[4]), "play_asx") == 0
+        || strcmp(trim($s_line[4]), "stream") == 0
         || strcmp(trim($s_line[4]), "sdr_radio") == 0){
         $out_html = "<tr><td>";
         if($s_line[3] != ""){
