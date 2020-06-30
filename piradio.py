@@ -274,6 +274,9 @@ class APIHandler(SocketServer.BaseRequestHandler):
 
         global station_lists
         global p_selected
+        global key_pressed
+
+        key_pressed = 1
 
         self.data = self.request.recv(256).strip()
 
