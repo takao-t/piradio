@@ -19,6 +19,11 @@ radio_volume_ctl = 'SoftMaster'
 radiko_user = ''
 radiko_pass = ''
 
+# 局リストとロゴファイルの位置
+# デフォルトは stations/station_list と stations/
+# station_file = 'stations/station_list'
+# station_logo_path = 'stations/'
+
 #日本語フォント
 jp_font = "mplus-1p-bold.ttf"
 
@@ -35,6 +40,10 @@ class CTRL_SW:
 #    STARTSTOP = 20  # Y 20で動作しない場合は24に変更する
 #    TUNE_DOWN = 5   # A
 #    TUNE_UP = 6     # B
+
+# バックライト消灯までの時間
+# デフォルトは30秒
+# BL_TIMEOUT = 180
 
 # 音量(初期値:0-31)
 # Line-out モデルの場合は音量調整しないので最大(31)にする

@@ -38,6 +38,8 @@ class CTRL_SW:
 #    TUNE_DOWN = 22
 #    VOLUME_UP = 21
 #    VOLUME_DOWN = 23
+# GPIOでプルアップする場合は指定
+#    PULLUP = 8
     STARTSTOP = 16
     TUNE_UP = 19
     TUNE_DOWN = 20
@@ -46,6 +48,12 @@ class CTRL_SW:
 
 # 音量(初期値)
 vol_val = 8
+
+
+# バックライトをGPIOで制御する場合は指定
+# BL_TIMEOUT はバックライトを消すまでの時間
+#BACKLIGHT = 22
+#BL_TIMEOUT = 180
 
 # EQでバスブーストする場合のサンプル
 #FFPLAY_OPTIONS = '-vn -af "firequalizer=gain_entry=\'entry(0,+8);entry(250,+6)\'" -infbuf -nodisp -loglevel quiet'
