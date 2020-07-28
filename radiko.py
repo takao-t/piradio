@@ -11,8 +11,8 @@ import xml.etree.ElementTree as ET
 
 # Radikoプレミアム時にCookieを保存するパス
 radiko_cookie_path ='./'
-# RadikoプレミアムのCokkie寿命(とりあえず1ヵ月)
-radiko_cookie_expires = (30*24*60*60)
+# RadikoプレミアムのCokkie寿命(とりあえず1週間)
+radiko_cookie_expires = (7*24*60*60)
 
 # Radiikoプレミアムログイン
 # returnはcokkieかFalse
