@@ -347,6 +347,10 @@ def api_p_start():
     time.sleep(0.5)
     station_num = p_selected
     (station_id, dummy1, dummy2, dummy3, p_method) = station_lists[station_num]
+    # 再生方法がA&G+
+    if p_method == 'agqr':
+        play_agqr(station_id)
+        b_icon_color = b_busy
     # 再生方法がRadiko
     if p_method == 'radiko':
         play_radiko(station_id,radiko_user,radiko_pass)
@@ -468,6 +472,10 @@ def pbs_control_sub():
         #print(station_id)
         #print(p_method)
         # 再生方法によって処理をわける(局リストのp_method)。他の方法で再生したければここに書く
+        # 再生方法がA&G+
+        if p_method == 'agqr':
+            stop_play_cmd = 'killall ffplay'
+            play_agqr(station_id)
         # 再生方法がRadiko
         if p_method == 'radiko':
             stop_play_cmd = 'killall ffplay'
@@ -511,7 +519,7 @@ def p_pbs_control():
 
     g_p_method = p_method
 
-    if p_method == 'radiko' or p_method == 'radiru' \
+    if p_method == 'radiko' or p_method == 'radiru' or p_method == 'agqr' \
                     or p_method == 'sdr_radio' or p_method == 'stream' \
                     or p_method == 'play_asx' or p_method == 'simulradio':
         g_ps_pressed = 1
@@ -928,6 +936,23 @@ def main():
     except KeyboardInterrupt:
         pass
 
+# A&G+
+def play_agqr(station):
+    streamurl = "https://fms2.uniqueradio.jp/agqr10/aandg1.m3u8"
+    agqr_cmd = "ffplay {1} -i  {0} >/dev/null 2>&1 &".format(streamurl, FFPLAY_OPTIONS)
+    try:
+        AUDIODEV.DRIVER
+        os.putenv('SDL_AUDIODRIVER', AUDIODEV.DRIVER)
+    except:
+        pass
+    try:
+        AUDIODEV.OUTDEV 
+        os.putenv('AUDIODEV', AUDIODEV.OUTDEV)
+    except:
+        pass
+    os.system(agqr_cmd)
+    return()
+    
 # Radiko再生
 def play_radiko(station, r_user="", r_pass=""):
 
