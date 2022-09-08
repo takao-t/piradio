@@ -50,5 +50,3 @@ https://www.thingiverse.com/thing:4417542
 
 アップデート情報及び詳細な使い方等はWikiにあります
 https://github.com/takao-t/piradio/wiki
-
-＝＝テスト＝＝
